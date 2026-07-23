@@ -20,6 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { clearSession } from "@/lib/auth";
+import { getNavUserSubtitle, getUserRoleLabel } from "@/lib/branding";
 import type { AuthUser } from "@/types/auth";
 
 type NavUserProps = {
@@ -66,7 +67,7 @@ export function NavUser({ user, logoutPath }: NavUserProps) {
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{user.name}</span>
               <span className="truncate text-xs text-muted-foreground">
-                {user.company ?? user.email}
+                {getNavUserSubtitle(user)}
               </span>
             </div>
             <ChevronsUpDown className="ml-auto size-4" />
@@ -87,6 +88,14 @@ export function NavUser({ user, logoutPath }: NavUserProps) {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{user.name}</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {getUserRoleLabel(user.role)}
+                    </span>
+                    {user.company ? (
+                      <span className="truncate text-xs font-medium text-indigo-600">
+                        {user.company}
+                      </span>
+                    ) : null}
                     <span className="truncate text-xs text-muted-foreground">
                       {user.email}
                     </span>

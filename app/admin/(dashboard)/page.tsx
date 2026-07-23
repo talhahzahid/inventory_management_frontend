@@ -44,7 +44,7 @@ const stats = [
 ];
 
 const companies = [
-  { name: "ABC Traders", plan: "Pro", users: 24, status: "Active" },
+  { name: "TZ Traders", plan: "Pro", users: 24, status: "Active" },
   { name: "Metro Supplies", plan: "Enterprise", users: 58, status: "Active" },
   { name: "QuickMart", plan: "Starter", users: 8, status: "Trial" },
   { name: "Global Parts", plan: "Pro", users: 31, status: "Active" },

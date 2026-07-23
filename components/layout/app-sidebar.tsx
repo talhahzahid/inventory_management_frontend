@@ -54,7 +54,7 @@ export function AppSidebar({
               render={<Link href={homeHref} />}
               className="rounded-xl hover:bg-sidebar-accent"
             >
-              <BrandLogo />
+              <BrandLogo user={user} />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

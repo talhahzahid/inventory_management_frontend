@@ -50,7 +50,7 @@ export default function CompanyDashboardPage() {
     <div className="space-y-8">
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-indigo-600">ABC Traders</p>
+          <p className="text-sm font-semibold text-indigo-600">TZ Traders</p>
           <h1>Company Dashboard</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">
             Manage your company inventory, purchase orders, suppliers, and team

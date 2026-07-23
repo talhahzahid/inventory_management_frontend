@@ -1,13 +1,20 @@
 import { appConfig } from "@/config/navigation";
+import { getSidebarBranding } from "@/lib/branding";
 import { cn } from "@/lib/utils";
+import type { AuthUser } from "@/types/auth";
 
 type BrandLogoProps = {
   className?: string;
   showText?: boolean;
+  user?: AuthUser;
 };
 
-export function BrandLogo({ className, showText = true }: BrandLogoProps) {
+export function BrandLogo({ className, showText = true, user }: BrandLogoProps) {
   const LogoIcon = appConfig.logoIcon;
+  const branding = user ? getSidebarBranding(user) : {
+    title: appConfig.name,
+    subtitle: appConfig.description,
+  };
 
   return (
     <div className={cn("flex items-center gap-3", className)}>
@@ -17,10 +24,10 @@ export function BrandLogo({ className, showText = true }: BrandLogoProps) {
       {showText ? (
         <div className="grid min-w-0 flex-1 text-left leading-tight">
           <span className="truncate text-[15px] font-bold text-sidebar-foreground">
-            {appConfig.name}
+            {branding.title}
           </span>
           <span className="truncate text-[11px] font-medium text-muted-foreground">
-            {appConfig.description}
+            {branding.subtitle}
           </span>
         </div>
       ) : null}

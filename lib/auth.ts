@@ -18,14 +18,14 @@ export const demoAccounts: DemoAccount[] = [
     name: "Company Admin",
     email: "company@abc.com",
     password: "Company@123",
-    company: "ABC Traders",
+    company: "TZ Traders",
   },
   {
     role: "user",
     name: "Staff User",
     email: "user@abc.com",
     password: "User@123",
-    company: "ABC Traders",
+    company: "TZ Traders",
   },
 ];
 

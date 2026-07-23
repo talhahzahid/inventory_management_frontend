@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { clearSession } from "@/lib/auth";
+import { getUserRoleLabel } from "@/lib/branding";
 import type { AuthUser } from "@/types/auth";
 
 import { getInitials } from "./nav-user";
@@ -82,7 +83,9 @@ export function Navbar({ title = "Dashboard", user, logoutPath }: NavbarProps) {
               </AvatarFallback>
             </Avatar>
             <span className="hidden text-sm font-medium lg:inline">
-              {user.name}
+              {user.company && user.role !== "super_admin"
+                ? `${user.name} · ${user.company}`
+                : user.name}
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-56 rounded-xl">
@@ -90,7 +93,14 @@ export function Navbar({ title = "Dashboard", user, logoutPath }: NavbarProps) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col gap-0.5">
                   <p className="text-sm font-semibold">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  {user.company ? (
+                    <p className="text-xs font-medium text-indigo-600">
+                      {user.company}
+                    </p>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground">
+                    {getUserRoleLabel(user.role)} · {user.email}
+                  </p>
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
