@@ -46,8 +46,8 @@ export default function UserDashboardPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-1">
-        <p className="text-sm font-semibold text-emerald-600">Staff Workspace</p>
-        <h1>My Dashboard</h1>
+        <p className="text-2xl font-semibold text-emerald-600">Staff Workspace</p>
+        <h1 className="text-lg">My Dashboard</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           View your assigned products, daily tasks, and pending orders in one
           place.

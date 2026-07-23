@@ -44,7 +44,7 @@ const stats = [
 ];
 
 const companies = [
-  { name: "TZ Traders", plan: "Pro", users: 24, status: "Active" },
+  { name: "Universal Trading Co.", plan: "Pro", users: 24, status: "Active" },
   { name: "Metro Supplies", plan: "Enterprise", users: 58, status: "Active" },
   { name: "QuickMart", plan: "Starter", users: 8, status: "Trial" },
   { name: "Global Parts", plan: "Pro", users: 31, status: "Active" },
@@ -55,8 +55,8 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-indigo-600">Platform Admin</p>
-          <h1>Super Admin Dashboard</h1>
+          <p className="text-2xl font-semibold text-indigo-600">Platform Admin</p>
+          <h1 className="text-lg">Super Admin Dashboard</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">
             Monitor all companies, subscriptions, revenue, and platform health
             from one control center.
@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-160 text-left text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
                 <th className="px-6 py-3 font-medium">Company</th>

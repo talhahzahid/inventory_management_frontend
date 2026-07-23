@@ -18,14 +18,14 @@ export const demoAccounts: DemoAccount[] = [
     name: "Company Admin",
     email: "company@abc.com",
     password: "Company@123",
-    company: "TZ Traders",
+    company: "Universal Trading Co.",
   },
   {
     role: "user",
     name: "Staff User",
     email: "user@abc.com",
     password: "User@123",
-    company: "TZ Traders",
+    company: "Universal Trading Co.",
   },
 ];
 
@@ -66,6 +66,19 @@ export function saveSession(user: AuthUser) {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
 }
 
+export function syncSessionWithDemoAccount(session: AuthUser): AuthUser {
+  const account = demoAccounts.find(
+    (item) => item.email.toLowerCase() === session.email.toLowerCase()
+  );
+
+  if (!account) {
+    return session;
+  }
+
+  const { password: _, ...user } = account;
+  return { ...session, ...user };
+}
+
 export function getSession(): AuthUser | null {
   if (typeof window === "undefined") return null;
 
@@ -73,7 +86,14 @@ export function getSession(): AuthUser | null {
   if (!raw) return null;
 
   try {
-    return JSON.parse(raw) as AuthUser;
+    const session = JSON.parse(raw) as AuthUser;
+    const synced = syncSessionWithDemoAccount(session);
+
+    if (JSON.stringify(synced) !== JSON.stringify(session)) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(synced));
+    }
+
+    return synced;
   } catch {
     return null;
   }
