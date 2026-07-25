@@ -1,0 +1,55 @@
+import type { Category } from "@/types/category";
+
+export const mockCategories: Category[] = [
+  {
+    id: "1",
+    name: "Electronics",
+    slug: "electronics",
+    description: "Electronic devices and accessories",
+    productCount: 42,
+    status: "active",
+    updatedAt: "2026-07-21",
+  },
+  {
+    id: "2",
+    name: "Office Supplies",
+    slug: "office-supplies",
+    description: "Stationery and office essentials",
+    productCount: 68,
+    status: "active",
+    updatedAt: "2026-07-20",
+  },
+  {
+    id: "3",
+    name: "Accessories",
+    slug: "accessories",
+    productCount: 25,
+    status: "active",
+    updatedAt: "2026-07-19",
+  },
+  {
+    id: "4",
+    name: "Packaging",
+    slug: "packaging",
+    description: "Boxes, wraps, and shipping materials",
+    productCount: 18,
+    status: "active",
+    updatedAt: "2026-07-18",
+  },
+  {
+    id: "5",
+    name: "Hardware",
+    slug: "hardware",
+    productCount: 31,
+    status: "active",
+    updatedAt: "2026-07-17",
+  },
+  {
+    id: "6",
+    name: "Discontinued Items",
+    slug: "discontinued-items",
+    productCount: 4,
+    status: "inactive",
+    updatedAt: "2026-06-10",
+  },
+];

@@ -36,17 +36,19 @@ export function ListViewFilters({
       )}
     >
       <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-end">
-        <Field className="relative min-w-[220px] flex-1 gap-2">
+        <Field className="min-w-[220px] flex-1 gap-2">
           <FieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Search
           </FieldLabel>
-          <Search className="pointer-events-none absolute bottom-2.5 left-3 size-4 text-muted-foreground" />
-          <Input
-            value={searchValue}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder={searchPlaceholder}
-            className="h-10 pl-10"
-          />
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchValue}
+              onChange={(event) => onSearchChange(event.target.value)}
+              placeholder={searchPlaceholder}
+              className="h-10 rounded-xl bg-white pl-10"
+            />
+          </div>
         </Field>
 
         {filters.map((filter) => (
@@ -63,6 +65,7 @@ export function ListViewFilters({
               onChange={filter.onChange}
               options={filter.options}
               placeholder={filter.placeholder ?? `All ${filter.label}`}
+              className="h-10 rounded-xl bg-transparent text-sm shadow-none"
             />
           </Field>
         ))}

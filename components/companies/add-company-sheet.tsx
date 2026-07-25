@@ -5,43 +5,41 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { UiButton } from "@/components/Button";
-import { ProductFormFields } from "@/components/products/product-form-fields";
+import { CompanyFormFields } from "@/components/companies/company-form-fields";
 import { SheetLayout } from "@/components/sheet-layout";
 import {
-  addProductSchema,
-  type AddProductFormValues,
-} from "@/schema/productSchema";
+  addCompanySchema,
+  type AddCompanyFormValues,
+} from "@/schema/companySchema";
 
-type AddProductSheetProps = {
+type AddCompanySheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddProductFormValues) => void | Promise<void>;
+  onSubmit?: (values: AddCompanyFormValues) => void | Promise<void>;
 };
 
-const defaultValues: AddProductFormValues = {
+const defaultValues: AddCompanyFormValues = {
   name: "",
-  sku: "",
-  category: "",
-  supplier: "",
-  price: 0,
-  stock: 0,
-  status: "draft",
-  description: "",
+  email: "",
+  adminName: "",
+  adminEmail: "",
+  plan: "starter",
+  status: "trial",
 };
 
-export function AddProductSheet({
+export function AddCompanySheet({
   open,
   onOpenChange,
   onSubmit,
-}: AddProductSheetProps) {
+}: AddCompanySheetProps) {
   const {
     register,
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddProductFormValues>({
-    resolver: zodResolver(addProductSchema),
+  } = useForm<AddCompanyFormValues>({
+    resolver: zodResolver(addCompanySchema),
     defaultValues,
   });
 
@@ -62,9 +60,9 @@ export function AddProductSheet({
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
-      badge="New Item"
-      title="Add Product"
-      description="Create a new product in your inventory catalog."
+      badge="Platform"
+      title="Add Company"
+      description="Register a new company on the StockFlow platform."
       size="2xl"
       footer={
         <>
@@ -87,14 +85,14 @@ export function AddProductSheet({
                 Saving...
               </>
             ) : (
-              "Save Product"
+              "Add Company"
             )}
           </UiButton>
         </>
       }
     >
       <form className="space-y-6" onSubmit={submitForm}>
-        <ProductFormFields
+        <CompanyFormFields
           register={register}
           control={control}
           errors={errors}

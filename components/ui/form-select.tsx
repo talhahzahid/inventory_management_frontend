@@ -39,12 +39,27 @@ export function FormSelect({
       onValueChange={(next) => onChange(next ?? "")}
       disabled={disabled}
     >
-      <SelectTrigger id={id} className={cn("h-10 w-full", className)}>
+      <SelectTrigger
+        id={id}
+        className={cn(
+          "h-11 w-full rounded-xl border-input bg-transparent px-3.5 text-base shadow-none",
+          className
+        )}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent className="rounded-xl">
+      <SelectContent
+        align="start"
+        alignItemWithTrigger={false}
+        sideOffset={6}
+        className="max-h-64 min-w-[var(--anchor-width)] rounded-xl border border-indigo-100/80 p-1 shadow-lg"
+      >
         {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className="rounded-lg py-2 pr-8 pl-2.5"
+          >
             {option.label}
           </SelectItem>
         ))}

@@ -5,43 +5,39 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { UiButton } from "@/components/Button";
-import { ProductFormFields } from "@/components/products/product-form-fields";
+import { CategoryFormFields } from "@/components/categories/category-form-fields";
 import { SheetLayout } from "@/components/sheet-layout";
 import {
-  addProductSchema,
-  type AddProductFormValues,
-} from "@/schema/productSchema";
+  addCategorySchema,
+  type AddCategoryFormValues,
+} from "@/schema/categorySchema";
 
-type AddProductSheetProps = {
+type AddCategorySheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddProductFormValues) => void | Promise<void>;
+  onSubmit?: (values: AddCategoryFormValues) => void | Promise<void>;
 };
 
-const defaultValues: AddProductFormValues = {
+const defaultValues: AddCategoryFormValues = {
   name: "",
-  sku: "",
-  category: "",
-  supplier: "",
-  price: 0,
-  stock: 0,
-  status: "draft",
+  slug: "",
   description: "",
+  status: "active",
 };
 
-export function AddProductSheet({
+export function AddCategorySheet({
   open,
   onOpenChange,
   onSubmit,
-}: AddProductSheetProps) {
+}: AddCategorySheetProps) {
   const {
     register,
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddProductFormValues>({
-    resolver: zodResolver(addProductSchema),
+  } = useForm<AddCategoryFormValues>({
+    resolver: zodResolver(addCategorySchema),
     defaultValues,
   });
 
@@ -62,9 +58,9 @@ export function AddProductSheet({
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
-      badge="New Item"
-      title="Add Product"
-      description="Create a new product in your inventory catalog."
+      badge="Inventory"
+      title="Add Category"
+      description="Create a new product category for your inventory catalog."
       size="2xl"
       footer={
         <>
@@ -87,14 +83,14 @@ export function AddProductSheet({
                 Saving...
               </>
             ) : (
-              "Save Product"
+              "Add Category"
             )}
           </UiButton>
         </>
       }
     >
       <form className="space-y-6" onSubmit={submitForm}>
-        <ProductFormFields
+        <CategoryFormFields
           register={register}
           control={control}
           errors={errors}

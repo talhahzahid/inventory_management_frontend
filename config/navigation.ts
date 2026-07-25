@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Package,
   Settings,
+  Shield,
   ShoppingCart,
   Tags,
   Truck,
@@ -72,6 +73,7 @@ const adminNav: NavGroup[] = [
   {
     label: "System",
     items: [
+      { title: "Roles", href: "/admin/roles", icon: Shield },
       { title: "Platform Users", href: "/admin/users", icon: Users },
       { title: "Settings", href: "/admin/settings", icon: Settings },
     ],

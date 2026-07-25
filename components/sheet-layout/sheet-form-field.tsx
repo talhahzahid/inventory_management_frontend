@@ -26,8 +26,8 @@ export function SheetFormField({
   children,
 }: SheetFormFieldProps) {
   return (
-    <Field className={cn("gap-2", className)} data-invalid={!!error}>
-      <FieldLabel htmlFor={htmlFor} className="font-semibold text-slate-700">
+    <Field className={cn("gap-2.5", className)} data-invalid={!!error}>
+      <FieldLabel htmlFor={htmlFor} className="text-sm font-semibold text-slate-700">
         {label}
         {required ? <span className="text-destructive"> *</span> : null}
       </FieldLabel>

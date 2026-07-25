@@ -5,43 +5,40 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { UiButton } from "@/components/Button";
-import { ProductFormFields } from "@/components/products/product-form-fields";
+import { PlatformRoleFormFields } from "@/components/roles/platform-role-form-fields";
 import { SheetLayout } from "@/components/sheet-layout";
 import {
-  addProductSchema,
-  type AddProductFormValues,
-} from "@/schema/productSchema";
+  addPlatformRoleSchema,
+  type AddPlatformRoleFormValues,
+} from "@/schema/platformRoleSchema";
 
-type AddProductSheetProps = {
+type AddPlatformRoleSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddProductFormValues) => void | Promise<void>;
+  onSubmit?: (values: AddPlatformRoleFormValues) => void | Promise<void>;
 };
 
-const defaultValues: AddProductFormValues = {
+const defaultValues: AddPlatformRoleFormValues = {
   name: "",
-  sku: "",
-  category: "",
-  supplier: "",
-  price: 0,
-  stock: 0,
-  status: "draft",
+  slug: "",
   description: "",
+  scope: "platform",
+  status: "active",
 };
 
-export function AddProductSheet({
+export function AddPlatformRoleSheet({
   open,
   onOpenChange,
   onSubmit,
-}: AddProductSheetProps) {
+}: AddPlatformRoleSheetProps) {
   const {
     register,
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddProductFormValues>({
-    resolver: zodResolver(addProductSchema),
+  } = useForm<AddPlatformRoleFormValues>({
+    resolver: zodResolver(addPlatformRoleSchema),
     defaultValues,
   });
 
@@ -62,9 +59,9 @@ export function AddProductSheet({
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
-      badge="New Item"
-      title="Add Product"
-      description="Create a new product in your inventory catalog."
+      badge="Access Control"
+      title="Add Role"
+      description="Create a new platform or company role with defined access scope."
       size="2xl"
       footer={
         <>
@@ -87,14 +84,14 @@ export function AddProductSheet({
                 Saving...
               </>
             ) : (
-              "Save Product"
+              "Add Role"
             )}
           </UiButton>
         </>
       }
     >
       <form className="space-y-6" onSubmit={submitForm}>
-        <ProductFormFields
+        <PlatformRoleFormFields
           register={register}
           control={control}
           errors={errors}

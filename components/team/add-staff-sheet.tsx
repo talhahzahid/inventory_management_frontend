@@ -5,43 +5,41 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { UiButton } from "@/components/Button";
-import { ProductFormFields } from "@/components/products/product-form-fields";
+import { StaffFormFields } from "@/components/team/staff-form-fields";
 import { SheetLayout } from "@/components/sheet-layout";
 import {
-  addProductSchema,
-  type AddProductFormValues,
-} from "@/schema/productSchema";
+  addStaffSchema,
+  type AddStaffFormValues,
+} from "@/schema/staffSchema";
 
-type AddProductSheetProps = {
+type AddStaffSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddProductFormValues) => void | Promise<void>;
+  onSubmit?: (values: AddStaffFormValues) => void | Promise<void>;
 };
 
-const defaultValues: AddProductFormValues = {
+const defaultValues: AddStaffFormValues = {
   name: "",
-  sku: "",
-  category: "",
-  supplier: "",
-  price: 0,
-  stock: 0,
-  status: "draft",
-  description: "",
+  email: "",
+  phone: "",
+  department: "",
+  status: "invited",
+  password: "",
 };
 
-export function AddProductSheet({
+export function AddStaffSheet({
   open,
   onOpenChange,
   onSubmit,
-}: AddProductSheetProps) {
+}: AddStaffSheetProps) {
   const {
     register,
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddProductFormValues>({
-    resolver: zodResolver(addProductSchema),
+  } = useForm<AddStaffFormValues>({
+    resolver: zodResolver(addStaffSchema),
     defaultValues,
   });
 
@@ -62,9 +60,9 @@ export function AddProductSheet({
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
-      badge="New Item"
-      title="Add Product"
-      description="Create a new product in your inventory catalog."
+      badge="Team Member"
+      title="Add Staff"
+      description="Invite or add a staff member to your company workspace."
       size="2xl"
       footer={
         <>
@@ -87,14 +85,14 @@ export function AddProductSheet({
                 Saving...
               </>
             ) : (
-              "Save Product"
+              "Add Staff"
             )}
           </UiButton>
         </>
       }
     >
       <form className="space-y-6" onSubmit={submitForm}>
-        <ProductFormFields
+        <StaffFormFields
           register={register}
           control={control}
           errors={errors}

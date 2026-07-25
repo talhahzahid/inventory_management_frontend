@@ -10,14 +10,15 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-type SheetLayoutSize = "sm" | "md" | "lg" | "xl" | "2xl";
+type SheetLayoutSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 
 const sizeClasses: Record<SheetLayoutSize, string> = {
-  sm: "sm:max-w-md",
-  md: "sm:max-w-xl",
-  lg: "sm:max-w-2xl",
-  xl: "sm:max-w-3xl",
-  "2xl": "sm:max-w-4xl",
+  sm: "w-full sm:w-[28rem]",
+  md: "w-full sm:w-[32rem]",
+  lg: "w-full sm:w-[36rem]",
+  xl: "w-full sm:w-[42rem]",
+  "2xl": "w-full sm:w-[48rem]",
+  "3xl": "w-full sm:w-[56rem]",
 };
 
 type SheetLayoutProps = {
@@ -42,7 +43,7 @@ export function SheetLayout({
   children,
   footer,
   side = "right",
-  size = "lg",
+  size = "xl",
   className,
 }: SheetLayoutProps) {
   return (
@@ -50,7 +51,7 @@ export function SheetLayout({
       <SheetContent
         side={side}
         className={cn(
-          "flex h-full w-full flex-col gap-0 border-indigo-100/80 bg-white p-0 sm:w-full sm:max-w-none",
+          "flex h-full flex-col gap-0 border-indigo-100/80 bg-white p-0",
           sizeClasses[size],
           className
         )}

@@ -1,7 +1,8 @@
 "use client";
 
 import { Download, MoreHorizontal, Plus, Upload } from "lucide-react";
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 import { UiButton } from "@/components/Button";
 import {
@@ -14,6 +15,8 @@ import {
   StatusBadge,
 } from "@/components/list-view";
 import type { DataTableColumn } from "@/components/list-view";
+import { AddProductSheet } from "@/components/products/add-product-sheet";
+import { ProductListLoader } from "@/components/products/product-list-loader";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,8 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AddProductSheet } from "@/components/products/add-product-sheet";
-import { mockProducts } from "@/data/mock-products";
+import { createProduct, fetchProducts } from "@/lib/products";
 import type { AddProductFormValues } from "@/schema/productSchema";
 import type { Product, ProductStatus } from "@/types/product";
 import { productCategories, productStatusLabels } from "@/types/product";
@@ -34,6 +36,7 @@ type ProductListScreenProps = {
   title?: string;
   description?: string;
   readOnly?: boolean;
+  createHref?: string;
 };
 
 export function ProductListScreen({
@@ -41,7 +44,10 @@ export function ProductListScreen({
   title = "Products",
   description = "Manage product catalog, pricing, stock levels, and availability.",
   readOnly = false,
+  createHref = "/company/products/new",
 }: ProductListScreenProps) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -49,13 +55,34 @@ export function ProductListScreen({
   const [page, setPage] = useState(1);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchProducts()
+      .then((data) => {
+        if (!cancelled) {
+          setProducts(data);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleAddProduct = async (values: AddProductFormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log("New product:", values);
+    const product = await createProduct(values);
+    setProducts((current) => [product, ...current]);
   };
 
   const filteredProducts = useMemo(() => {
-    let result = [...mockProducts];
+    let result = [...products];
 
     if (search.trim()) {
       const query = search.toLowerCase();
@@ -90,7 +117,7 @@ export function ProductListScreen({
     });
 
     return result;
-  }, [search, category, status, sortBy]);
+  }, [products, search, category, status, sortBy]);
 
   const paginatedProducts = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -99,24 +126,24 @@ export function ProductListScreen({
 
   const stats = useMemo(
     () => [
-      { label: "Total Products", value: mockProducts.length },
+      { label: "Total Products", value: products.length },
       {
         label: "In Stock",
-        value: mockProducts.filter((p) => p.status === "in_stock").length,
+        value: products.filter((p) => p.status === "in_stock").length,
         tone: "success" as const,
       },
       {
         label: "Low Stock",
-        value: mockProducts.filter((p) => p.status === "low_stock").length,
+        value: products.filter((p) => p.status === "low_stock").length,
         tone: "warning" as const,
       },
       {
         label: "Out of Stock",
-        value: mockProducts.filter((p) => p.status === "out_of_stock").length,
+        value: products.filter((p) => p.status === "out_of_stock").length,
         tone: "danger" as const,
       },
     ],
-    []
+    [products]
   );
 
   const hasActiveFilters =
@@ -222,113 +249,120 @@ export function ProductListScreen({
         ]),
   ];
 
+  if (isLoading) {
+    return <ProductListLoader />;
+  }
+
   return (
     <>
-    <ListViewLayout
-      header={
-        <ListViewHeader
-          badge={badge}
-          title={title}
-          description={description}
-          actions={
-            readOnly ? (
-              <UiButton variant="outline" buttonText="Export" icon={Download} />
-            ) : (
-              <>
-                <UiButton variant="outline" buttonText="Import" icon={Upload} />
+      <ListViewLayout
+        header={
+          <ListViewHeader
+            badge={badge}
+            title={title}
+            description={description}
+            actions={
+              readOnly ? (
                 <UiButton variant="outline" buttonText="Export" icon={Download} />
-                <UiButton
-                  variant="primary"
-                  buttonText="Add Product"
-                  icon={Plus}
-                  onClick={() => setIsAddProductOpen(true)}
-                />
-              </>
-            )
-          }
-        />
-      }
-      stats={<ListViewStats stats={stats} />}
-      filters={
-        <ListViewFilters
-          searchValue={search}
-          onSearchChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-          searchPlaceholder="Search by name, SKU, or supplier..."
-          hasActiveFilters={hasActiveFilters}
-          onClear={handleClearFilters}
-          filters={[
-            {
-              id: "category",
-              label: "Category",
-              value: category,
-              onChange: (value) => {
-                setCategory(value);
-                setPage(1);
+              ) : (
+                <>
+                  <UiButton variant="outline" buttonText="Import" icon={Upload} />
+                  <UiButton variant="outline" buttonText="Export" icon={Download} />
+                  <Link href={createHref}>
+                    <UiButton variant="primary" buttonText="Add Product" icon={Plus} />
+                  </Link>
+                  <UiButton
+                    variant="outline"
+                    buttonText="Quick Add"
+                    icon={Plus}
+                    onClick={() => setIsAddProductOpen(true)}
+                  />
+                </>
+              )
+            }
+          />
+        }
+        stats={<ListViewStats stats={stats} />}
+        filters={
+          <ListViewFilters
+            searchValue={search}
+            onSearchChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            searchPlaceholder="Search by name, SKU, or supplier..."
+            hasActiveFilters={hasActiveFilters}
+            onClear={handleClearFilters}
+            filters={[
+              {
+                id: "category",
+                label: "Category",
+                value: category,
+                onChange: (value) => {
+                  setCategory(value);
+                  setPage(1);
+                },
+                options: [
+                  { label: "All Categories", value: "all" },
+                  ...productCategories
+                    .filter((item) => item !== "All Categories")
+                    .map((item) => ({ label: item, value: item })),
+                ],
               },
-              options: [
-                { label: "All Categories", value: "all" },
-                ...productCategories
-                  .filter((item) => item !== "All Categories")
-                  .map((item) => ({ label: item, value: item })),
-              ],
-            },
-            {
-              id: "status",
-              label: "Status",
-              value: status,
-              onChange: (value) => {
-                setStatus(value);
-                setPage(1);
+              {
+                id: "status",
+                label: "Status",
+                value: status,
+                onChange: (value) => {
+                  setStatus(value);
+                  setPage(1);
+                },
+                options: [
+                  { label: "All Status", value: "all" },
+                  ...(Object.entries(productStatusLabels) as [ProductStatus, string][]).map(
+                    ([value, label]) => ({ label, value })
+                  ),
+                ],
               },
-              options: [
-                { label: "All Status", value: "all" },
-                ...(Object.entries(productStatusLabels) as [ProductStatus, string][]).map(
-                  ([value, label]) => ({ label, value })
-                ),
-              ],
-            },
-            {
-              id: "sort",
-              label: "Sort By",
-              value: sortBy,
-              onChange: setSortBy,
-              options: [
-                { label: "Recently Updated", value: "updated_desc" },
-                { label: "Name A-Z", value: "name_asc" },
-                { label: "Price High-Low", value: "price_desc" },
-                { label: "Stock Low-High", value: "stock_asc" },
-              ],
-            },
-          ]}
+              {
+                id: "sort",
+                label: "Sort By",
+                value: sortBy,
+                onChange: setSortBy,
+                options: [
+                  { label: "Recently Updated", value: "updated_desc" },
+                  { label: "Name A-Z", value: "name_asc" },
+                  { label: "Price High-Low", value: "price_desc" },
+                  { label: "Stock Low-High", value: "stock_asc" },
+                ],
+              },
+            ]}
+          />
+        }
+        footer={
+          <ListViewPagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={filteredProducts.length}
+            onPageChange={setPage}
+          />
+        }
+      >
+        <DataTable
+          columns={columns}
+          data={paginatedProducts}
+          rowKey={(product) => product.id}
+          emptyMessage="No products match your filters."
         />
-      }
-      footer={
-        <ListViewPagination
-          page={page}
-          pageSize={PAGE_SIZE}
-          total={filteredProducts.length}
-          onPageChange={setPage}
-        />
-      }
-    >
-      <DataTable
-        columns={columns}
-        data={paginatedProducts}
-        rowKey={(product) => product.id}
-        emptyMessage="No products match your filters."
-      />
-    </ListViewLayout>
+      </ListViewLayout>
 
-    {!readOnly ? (
-      <AddProductSheet
-        open={isAddProductOpen}
-        onOpenChange={setIsAddProductOpen}
-        onSubmit={handleAddProduct}
-      />
-    ) : null}
+      {!readOnly ? (
+        <AddProductSheet
+          open={isAddProductOpen}
+          onOpenChange={setIsAddProductOpen}
+          onSubmit={handleAddProduct}
+        />
+      ) : null}
     </>
   );
 }
