@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 import { UiButton } from "@/components/Button";
@@ -13,24 +13,32 @@ import {
   addCategorySchema,
   type AddCategoryFormValues,
 } from "@/schema/categorySchema";
+import type { Category } from "@/types/category";
 
-type AddCategorySheetProps = {
+type EditCategorySheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddCategoryFormValues) => void | Promise<void>;
+  category: Category | null;
+  onSubmit?: (
+    id: string,
+    values: AddCategoryFormValues
+  ) => void | Promise<void>;
 };
 
-const defaultValues: AddCategoryFormValues = {
-  name: "",
-  description: "",
-  status: "active",
-};
+function getDefaultValues(category: Category | null): AddCategoryFormValues {
+  return {
+    name: category?.name ?? "",
+    description: category?.description ?? "",
+    status: category?.status ?? "active",
+  };
+}
 
-export function AddCategorySheet({
+export function EditCategorySheet({
   open,
   onOpenChange,
+  category,
   onSubmit,
-}: AddCategorySheetProps) {
+}: EditCategorySheetProps) {
   const [submitError, setSubmitError] = useState("");
 
   const {
@@ -41,40 +49,50 @@ export function AddCategorySheet({
     formState: { errors, isSubmitting },
   } = useForm<AddCategoryFormValues>({
     resolver: zodResolver(addCategorySchema),
-    defaultValues,
+    defaultValues: getDefaultValues(category),
   });
+
+  useEffect(() => {
+    if (open && category) {
+      reset(getDefaultValues(category));
+      setSubmitError("");
+    }
+  }, [open, category, reset]);
 
   const handleClose = (nextOpen: boolean) => {
     if (!nextOpen) {
-      reset(defaultValues);
+      reset(getDefaultValues(category));
       setSubmitError("");
     }
     onOpenChange(nextOpen);
   };
 
   const submitForm = handleSubmit(async (values) => {
+    if (!category) return;
+
     setSubmitError("");
 
     try {
-      await onSubmit?.(values);
-      reset(defaultValues);
+      await onSubmit?.(category.id, values);
       onOpenChange(false);
     } catch (error) {
       setSubmitError(
         error instanceof Error
           ? error.message
-          : "Unable to create category. Please try again."
+          : "Unable to update category. Please try again."
       );
     }
   });
+
+  if (!category) return null;
 
   return (
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
       badge="Inventory"
-      title="Add Category"
-      description="Create a new product category for your inventory catalog."
+      title="Edit Category"
+      description={`Update details for ${category.name}.`}
       size="2xl"
       footer={
         <>
@@ -97,7 +115,10 @@ export function AddCategorySheet({
                 Saving...
               </>
             ) : (
-              "Add Category"
+              <>
+                <Save className="size-4" />
+                Save Changes
+              </>
             )}
           </UiButton>
         </>

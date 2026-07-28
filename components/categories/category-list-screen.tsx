@@ -1,12 +1,23 @@
 "use client";
 
-import { Download, MoreHorizontal, Plus } from "lucide-react";
+import {
+  Download,
+  Eye,
+  FolderTree,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Power,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { UiButton } from "@/components/Button";
 import { AddCategorySheet } from "@/components/categories/add-category-sheet";
 import { CategoryListLoader } from "@/components/categories/category-list-loader";
 import { CategoryStatusBadge } from "@/components/categories/category-status-badge";
+import { EditCategorySheet } from "@/components/categories/edit-category-sheet";
+import { ViewCategorySheet } from "@/components/categories/view-category-sheet";
 import {
   DataTable,
   ListViewFilters,
@@ -23,7 +34,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createCategory, fetchCategories } from "@/lib/categories";
+import {
+  createCategory,
+  deactivateCategory,
+  fetchCategories,
+  updateCategory,
+} from "@/lib/categories";
 import type { AddCategoryFormValues } from "@/schema/categorySchema";
 import type { Category, CategoryStatus } from "@/types/category";
 import { categoryStatusLabels } from "@/types/category";
@@ -38,31 +54,83 @@ export function CategoryListScreen() {
   const [sortBy, setSortBy] = useState("updated_desc");
   const [page, setPage] = useState(1);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isViewCategoryOpen, setIsViewCategoryOpen] = useState(false);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
+  const [loadError, setLoadError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadCategories = () => {
+    setIsLoading(true);
 
     fetchCategories()
       .then((data) => {
-        if (!cancelled) {
-          setCategories(data);
-          setIsLoading(false);
-        }
+        setCategories(data);
+        setLoadError("");
       })
-      .catch(() => {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+      .catch((error: unknown) => {
+        setLoadError(
+          error instanceof Error ? error.message : "Unable to load categories."
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
+  };
 
-    return () => {
-      cancelled = true;
-    };
+  useEffect(() => {
+    loadCategories();
   }, []);
 
   const handleAddCategory = async (values: AddCategoryFormValues) => {
     const category = await createCategory(values);
     setCategories((current) => [category, ...current]);
+    toast.success("Category created successfully", {
+      description: `${category.name} has been added to your catalog.`,
+    });
+  };
+
+  const handleUpdateCategory = async (
+    id: string,
+    values: AddCategoryFormValues
+  ) => {
+    const category = await updateCategory(id, values);
+    setCategories((current) =>
+      current.map((item) => (item.id === id ? category : item))
+    );
+    setSelectedCategory(category);
+    toast.success("Category updated successfully", {
+      description: `${category.name} has been saved.`,
+    });
+  };
+
+  const handleDeactivateCategory = async (category: Category) => {
+    try {
+      const updated = await deactivateCategory(category.id);
+      setCategories((current) =>
+        current.map((item) => (item.id === category.id ? updated : item))
+      );
+      toast.success("Category deactivated", {
+        description: `${category.name} is now inactive.`,
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to deactivate category."
+      );
+    }
+  };
+
+  const openViewCategory = (category: Category) => {
+    setSelectedCategory(category);
+    setIsViewCategoryOpen(true);
+  };
+
+  const openEditCategory = (category: Category) => {
+    setSelectedCategory(category);
+    setIsEditCategoryOpen(true);
   };
 
   const filteredCategories = useMemo(() => {
@@ -138,9 +206,14 @@ export function CategoryListScreen() {
       key: "category",
       header: "Category",
       render: (category) => (
-        <div>
-          <p className="font-semibold text-foreground">{category.name}</p>
-          <p className="text-xs text-muted-foreground">{category.slug}</p>
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+            <FolderTree className="size-4" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">{category.name}</p>
+            <p className="text-xs text-muted-foreground">{category.slug}</p>
+          </div>
         </div>
       ),
     },
@@ -175,28 +248,61 @@ export function CategoryListScreen() {
     {
       key: "actions",
       header: "",
-      headerClassName: "w-12",
+      headerClassName: "w-32",
       className: "text-right",
-      render: () => (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="rounded-lg"
-                aria-label="Open actions"
-              />
-            }
+      render: (category) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
+            aria-label={`View ${category.name}`}
+            onClick={() => openViewCategory(category)}
           >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="rounded-xl">
-            <DropdownMenuItem>Edit category</DropdownMenuItem>
-            <DropdownMenuItem>View products</DropdownMenuItem>
-            <DropdownMenuItem>Deactivate</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <Eye className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
+            aria-label={`Edit ${category.name}`}
+            onClick={() => openEditCategory(category)}
+          >
+            <Pencil className="size-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-lg"
+                  aria-label="Open actions"
+                />
+              }
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-xl">
+              <DropdownMenuItem onClick={() => openViewCategory(category)}>
+                <Eye className="size-4" />
+                View category
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openEditCategory(category)}>
+                <Pencil className="size-4" />
+                Edit category
+              </DropdownMenuItem>
+              {category.status === "active" ? (
+                <DropdownMenuItem
+                  onClick={() => handleDeactivateCategory(category)}
+                >
+                  <Power className="size-4" />
+                  Deactivate
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
@@ -281,7 +387,7 @@ export function CategoryListScreen() {
           columns={columns}
           data={paginatedCategories}
           rowKey={(category) => category.id}
-          emptyMessage="No categories match your filters."
+          emptyMessage={loadError || "No categories match your filters."}
         />
       </ListViewLayout>
 
@@ -289,6 +395,23 @@ export function CategoryListScreen() {
         open={isAddCategoryOpen}
         onOpenChange={setIsAddCategoryOpen}
         onSubmit={handleAddCategory}
+      />
+
+      <ViewCategorySheet
+        open={isViewCategoryOpen}
+        onOpenChange={setIsViewCategoryOpen}
+        category={selectedCategory}
+        onEdit={() => {
+          setIsViewCategoryOpen(false);
+          setIsEditCategoryOpen(true);
+        }}
+      />
+
+      <EditCategorySheet
+        open={isEditCategoryOpen}
+        onOpenChange={setIsEditCategoryOpen}
+        category={selectedCategory}
+        onSubmit={handleUpdateCategory}
       />
     </>
   );

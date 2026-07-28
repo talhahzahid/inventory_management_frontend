@@ -9,11 +9,9 @@ import { accentStyles } from "@/components/auth/login-layout";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  authenticate,
-  getDashboardPathForRole,
-  saveSession,
-} from "@/lib/auth";
+import { login, mapBackendRole } from "@/api/login";
+import { getDashboardPathForRole, saveSession } from "@/lib/auth";
+import type { AuthUser } from "@/types/auth";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types/auth";
 
@@ -50,18 +48,44 @@ export function LoginForm({
     setError("");
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    try {
+      const { token, user } = await login({
+        email: formData.email,
+        password: formData.password,
+      });
 
-    const user = authenticate(formData.email, formData.password, role);
+      const mappedRole = mapBackendRole(String(user.role));
 
-    if (!user) {
-      setError("Invalid email or password for this portal.");
+      if (!mappedRole) {
+        setError("Your account role is not supported on this platform.");
+        return;
+      }
+
+      const session: AuthUser = {
+        id: Number(user.id),
+        role: mappedRole,
+        name: String(user.name),
+        email: String(user.email),
+        company: user.company_name ? String(user.company_name) : undefined,
+        company_id:
+          user.company_id === null || user.company_id === undefined
+            ? null
+            : Number(user.company_id),
+        role_id: user.role_id === undefined ? undefined : Number(user.role_id),
+        token,
+      };
+
+      saveSession(session);
+      router.push(getDashboardPathForRole(mappedRole));
+    } catch (loginError) {
+      setError(
+        loginError instanceof Error
+          ? loginError.message
+          : "Unable to sign in. Please try again."
+      );
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    saveSession(user);
-    router.push(getDashboardPathForRole(user.role));
   };
 
   return (

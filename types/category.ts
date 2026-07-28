@@ -7,7 +7,11 @@ export type Category = {
   description?: string;
   productCount: number;
   status: CategoryStatus;
+  createdAt?: string;
   updatedAt: string;
+  companyId?: number;
+  companyName?: string;
+  companyEmail?: string;
 };
 
 export const categoryStatusLabels: Record<CategoryStatus, string> = {

@@ -57,7 +57,7 @@ export function CategoryFormFields({
               />
             </SheetFormField>
 
-            <SheetFormField
+            {/* <SheetFormField
               label="Slug"
               htmlFor="slug"
               required
@@ -71,30 +71,33 @@ export function CategoryFormFields({
                 className={sheetInputClassName}
                 {...register("slug")}
               />
+            </SheetFormField> */}
+
+
+            <SheetFormField
+              label="Status"
+              htmlFor="status"
+              required
+              error={errors.status?.message}
+            >
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    id="status"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select status"
+                    options={statusOptions}
+                    className={sheetSelectClassName}
+                  />
+                )}
+              />
             </SheetFormField>
+
           </div>
 
-          <SheetFormField
-            label="Status"
-            htmlFor="status"
-            required
-            error={errors.status?.message}
-          >
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <FormSelect
-                  id="status"
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="Select status"
-                  options={statusOptions}
-                  className={sheetSelectClassName}
-                />
-              )}
-            />
-          </SheetFormField>
 
           <SheetFormField
             label="Description"

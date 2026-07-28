@@ -36,5 +36,9 @@ export function getNavUserSubtitle(user: AuthUser) {
     return user.email;
   }
 
+  if (user.company) {
+    return user.company;
+  }
+
   return `${getUserRoleLabel(user.role)} · ${user.email}`;
 }

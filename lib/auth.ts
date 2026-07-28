@@ -1,6 +1,7 @@
 import type { AuthUser, UserRole } from "@/types/auth";
 
 const AUTH_STORAGE_KEY = "stockflow_session";
+const TOKEN_STORAGE_KEY = "stockflow_token";
 
 type DemoAccount = AuthUser & {
   password: string;
@@ -64,6 +65,15 @@ export function authenticate(
 export function saveSession(user: AuthUser) {
   if (typeof window === "undefined") return;
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+
+  if (user.token) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, user.token);
+  }
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_STORAGE_KEY) ?? getSession()?.token ?? null;
 }
 
 export function syncSessionWithDemoAccount(session: AuthUser): AuthUser {
@@ -87,6 +97,11 @@ export function getSession(): AuthUser | null {
 
   try {
     const session = JSON.parse(raw) as AuthUser;
+
+    if (session.token || session.id) {
+      return session;
+    }
+
     const synced = syncSessionWithDemoAccount(session);
 
     if (JSON.stringify(synced) !== JSON.stringify(session)) {
@@ -102,6 +117,7 @@ export function getSession(): AuthUser | null {
 export function clearSession() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
 export function getLoginPathForRole(role: UserRole) {
