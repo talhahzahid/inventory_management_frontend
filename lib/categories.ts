@@ -40,16 +40,37 @@ export function mapCategoryFromApi(record: CategoryApiRecord): Category {
   };
 }
 
+export type CategoriesListResult = {
+  categories: Category[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
 export async function fetchCategories(
   params?: CategoriesListParams
 ): Promise<Category[]> {
+  const result = await fetchCategoriesList(params);
+  return result.categories;
+}
+
+export async function fetchCategoriesList(
+  params?: CategoriesListParams
+): Promise<CategoriesListResult> {
   const result = await fetchCategoriesApi({
     page: 1,
-    limit: 100,
+    limit: 10,
     ...params,
   });
 
-  return result.data.map(mapCategoryFromApi);
+  return {
+    categories: result.data.map(mapCategoryFromApi),
+    total: result.total,
+    page: result.page,
+    limit: result.limit,
+    totalPages: result.totalPages,
+  };
 }
 
 export async function fetchCategoryById(id: string): Promise<Category> {

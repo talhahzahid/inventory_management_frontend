@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -72,14 +72,6 @@ export function ListViewFilters({
       </div>
 
       <div className="flex items-center gap-2 md:pb-0.5">
-        <Button
-          type="button"
-          variant="outline"
-          className="h-10 rounded-xl"
-        >
-          <SlidersHorizontal className="size-4" />
-          More filters
-        </Button>
         {hasActiveFilters && onClear ? (
           <Button
             type="button"

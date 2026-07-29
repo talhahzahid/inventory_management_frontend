@@ -4,38 +4,35 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-
-import { getErrorMessage } from "@/api/api";
 
 import { UiButton } from "@/components/Button";
-import { StaffFormFields } from "@/components/team/staff-form-fields";
+import { SupplierFormFields } from "@/components/suppliers/supplier-form-fields";
 import { SheetLayout } from "@/components/sheet-layout";
 import { FieldError } from "@/components/ui/field";
 import {
-  addStaffSchema,
-  type AddStaffFormValues,
-} from "@/schema/staffSchema";
+  addSupplierSchema,
+  type AddSupplierFormValues,
+} from "@/schema/supplierSchema";
 
-type AddStaffSheetProps = {
+type AddSupplierSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddStaffFormValues) => void | Promise<void>;
+  onSubmit?: (values: AddSupplierFormValues) => void | Promise<void>;
 };
 
-const defaultValues: AddStaffFormValues = {
+const defaultValues: AddSupplierFormValues = {
   name: "",
+  phone: "",
   email: "",
-  password: "",
-  role_id: "",
+  address: "",
   status: "active",
 };
 
-export function AddStaffSheet({
+export function AddSupplierSheet({
   open,
   onOpenChange,
   onSubmit,
-}: AddStaffSheetProps) {
+}: AddSupplierSheetProps) {
   const [submitError, setSubmitError] = useState("");
 
   const {
@@ -44,8 +41,8 @@ export function AddStaffSheet({
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddStaffFormValues>({
-    resolver: zodResolver(addStaffSchema),
+  } = useForm<AddSupplierFormValues>({
+    resolver: zodResolver(addSupplierSchema),
     defaultValues,
   });
 
@@ -65,14 +62,11 @@ export function AddStaffSheet({
       reset(defaultValues);
       onOpenChange(false);
     } catch (error) {
-      const message = getErrorMessage(
-        error,
-        "Unable to add staff member. Please try again."
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Unable to create supplier. Please try again."
       );
-      setSubmitError(message);
-      toast.error("Failed to add staff member", {
-        description: message,
-      });
     }
   });
 
@@ -80,9 +74,9 @@ export function AddStaffSheet({
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
-      badge="Team Member"
-      title="Add Staff"
-      description="Add a staff member to your company workspace."
+      badge="Operations"
+      title="Add Supplier"
+      description="Add a new supplier to manage purchase orders and inventory sourcing."
       size="2xl"
       footer={
         <>
@@ -105,7 +99,7 @@ export function AddStaffSheet({
                 Saving...
               </>
             ) : (
-              "Add Staff"
+              "Add Supplier"
             )}
           </UiButton>
         </>
@@ -113,7 +107,7 @@ export function AddStaffSheet({
     >
       <form className="space-y-6" onSubmit={submitForm}>
         {submitError ? <FieldError>{submitError}</FieldError> : null}
-        <StaffFormFields
+        <SupplierFormFields
           register={register}
           control={control}
           errors={errors}

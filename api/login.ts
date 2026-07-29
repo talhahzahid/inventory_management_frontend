@@ -27,6 +27,24 @@ export function mapBackendRole(backendRole: string): UserRole | null {
   return BACKEND_TO_FRONTEND_ROLE[backendRole] ?? null;
 }
 
+export function isRoleAllowedOnPortal(
+  portalRole: UserRole,
+  backendRole: string
+): boolean {
+  return mapBackendRole(backendRole) === portalRole;
+}
+
+export function getPortalAccessError(portalRole: UserRole) {
+  switch (portalRole) {
+    case "super_admin":
+      return "Invalid email or password for the platform admin portal.";
+    case "company_admin":
+      return "Invalid email or password for the company admin portal.";
+    case "user":
+      return "Invalid email or password for the staff portal.";
+  }
+}
+
 export async function login(credentials: { email: string; password: string }) {
   const data = await apiRequest<LoginResponse>({
     endpoint: "/auth/login",

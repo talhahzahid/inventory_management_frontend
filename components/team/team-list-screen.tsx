@@ -1,7 +1,10 @@
 "use client";
 
-import { Download, MoreHorizontal, UserPlus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Download, Loader2, MoreHorizontal, UserPlus } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+
+import { getErrorMessage } from "@/api/api";
 
 import { UiButton } from "@/components/Button";
 import {
@@ -23,93 +26,73 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createStaffMember, fetchStaff } from "@/lib/team";
+import { useDebounce } from "@/hooks/use-debounce";
+import { buildTeamListParams } from "@/lib/team-filters";
+import {
+  createStaffMember,
+  fetchStaffList,
+  formatRoleName,
+} from "@/lib/team";
 import type { AddStaffFormValues } from "@/schema/staffSchema";
 import type { StaffMember, StaffStatus } from "@/types/team";
-import { staffDepartments, staffStatusLabels } from "@/types/team";
+import { staffStatusLabels } from "@/types/team";
 
 const PAGE_SIZE = 6;
 
 export function TeamListScreen() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [search, setSearch] = useState("");
-  const [department, setDepartment] = useState("all");
   const [status, setStatus] = useState("all");
-  const [sortBy, setSortBy] = useState("joined_desc");
   const [page, setPage] = useState(1);
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  const debouncedSearch = useDebounce(search, 400);
+
+  const loadStaff = useCallback(async () => {
+    setIsFetching(true);
+
+    try {
+      const result = await fetchStaffList(
+        buildTeamListParams({
+          page,
+          limit: PAGE_SIZE,
+          search: debouncedSearch,
+          status,
+        })
+      );
+
+      setStaff(result.staff);
+      setTotal(result.total);
+      setLoadError("");
+    } catch (error: unknown) {
+      setLoadError(
+        getErrorMessage(error, "Unable to load team members.")
+      );
+    } finally {
+      setIsFetching(false);
+      setIsInitialLoading(false);
+    }
+  }, [debouncedSearch, page, status]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    fetchStaff()
-      .then((data) => {
-        if (!cancelled) {
-          setStaff(data);
-          setIsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    loadStaff();
+  }, [loadStaff]);
 
   const handleAddStaff = async (values: AddStaffFormValues) => {
-    const member = await createStaffMember(values);
-    setStaff((current) => [member, ...current]);
-  };
-
-  const filteredStaff = useMemo(() => {
-    let result = [...staff];
-
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (member) =>
-          member.name.toLowerCase().includes(query) ||
-          member.email.toLowerCase().includes(query) ||
-          member.department.toLowerCase().includes(query)
-      );
-    }
-
-    if (department !== "all") {
-      result = result.filter((member) => member.department === department);
-    }
-
-    if (status !== "all") {
-      result = result.filter((member) => member.status === status);
-    }
-
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "name_asc":
-          return a.name.localeCompare(b.name);
-        case "department_asc":
-          return a.department.localeCompare(b.department);
-        case "joined_desc":
-        default:
-          return b.joinedAt.localeCompare(a.joinedAt);
-      }
+    await createStaffMember(values);
+    toast.success("Staff member added", {
+      description: `${values.name} has been added to your team.`,
     });
-
-    return result;
-  }, [staff, search, department, status, sortBy]);
-
-  const paginatedStaff = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filteredStaff.slice(start, start + PAGE_SIZE);
-  }, [filteredStaff, page]);
+    void loadStaff();
+  };
 
   const stats = useMemo(
     () => [
-      { label: "Total Staff", value: staff.length },
+      { label: "Total Staff", value: total },
       {
         label: "Active",
         value: staff.filter((member) => member.status === "active").length,
@@ -126,17 +109,14 @@ export function TeamListScreen() {
         tone: "danger" as const,
       },
     ],
-    [staff]
+    [staff, total]
   );
 
-  const hasActiveFilters =
-    search.trim() !== "" || department !== "all" || status !== "all";
+  const hasActiveFilters = search.trim() !== "" || status !== "all";
 
   const handleClearFilters = () => {
     setSearch("");
-    setDepartment("all");
     setStatus("all");
-    setSortBy("joined_desc");
     setPage(1);
   };
 
@@ -152,19 +132,12 @@ export function TeamListScreen() {
       ),
     },
     {
-      key: "department",
-      header: "Department",
+      key: "role",
+      header: "Role",
       render: (member) => (
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-          {member.department}
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium capitalize text-slate-700">
+          {formatRoleName(member.roleName)}
         </span>
-      ),
-    },
-    {
-      key: "phone",
-      header: "Phone",
-      render: (member) => (
-        <span className="text-muted-foreground">{member.phone ?? "—"}</span>
       ),
     },
     {
@@ -180,10 +153,10 @@ export function TeamListScreen() {
       ),
     },
     {
-      key: "lastActive",
-      header: "Last Active",
+      key: "updated",
+      header: "Updated",
       render: (member) => (
-        <span className="text-muted-foreground">{member.lastActive ?? "—"}</span>
+        <span className="text-muted-foreground">{member.updatedAt ?? "—"}</span>
       ),
     },
     {
@@ -215,7 +188,7 @@ export function TeamListScreen() {
     },
   ];
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <TeamListLoader />;
   }
 
@@ -248,25 +221,10 @@ export function TeamListScreen() {
               setSearch(value);
               setPage(1);
             }}
-            searchPlaceholder="Search by name, email, or department..."
+            searchPlaceholder="Search by name or email..."
             hasActiveFilters={hasActiveFilters}
             onClear={handleClearFilters}
             filters={[
-              {
-                id: "department",
-                label: "Department",
-                value: department,
-                onChange: (value) => {
-                  setDepartment(value);
-                  setPage(1);
-                },
-                options: [
-                  { label: "All Departments", value: "all" },
-                  ...staffDepartments
-                    .filter((item) => item !== "All Departments")
-                    .map((item) => ({ label: item, value: item })),
-                ],
-              },
               {
                 id: "status",
                 label: "Status",
@@ -277,20 +235,10 @@ export function TeamListScreen() {
                 },
                 options: [
                   { label: "All Status", value: "all" },
-                  ...(Object.entries(staffStatusLabels) as [StaffStatus, string][]).map(
-                    ([value, label]) => ({ label, value })
-                  ),
-                ],
-              },
-              {
-                id: "sort",
-                label: "Sort By",
-                value: sortBy,
-                onChange: setSortBy,
-                options: [
-                  { label: "Recently Joined", value: "joined_desc" },
-                  { label: "Name A-Z", value: "name_asc" },
-                  { label: "Department A-Z", value: "department_asc" },
+                  ...(Object.entries(staffStatusLabels) as [
+                    StaffStatus,
+                    string,
+                  ][]).map(([value, label]) => ({ label, value })),
                 ],
               },
             ]}
@@ -300,17 +248,27 @@ export function TeamListScreen() {
           <ListViewPagination
             page={page}
             pageSize={PAGE_SIZE}
-            total={filteredStaff.length}
+            total={total}
             onPageChange={setPage}
           />
         }
       >
-        <DataTable
-          columns={columns}
-          data={paginatedStaff}
-          rowKey={(member) => member.id}
-          emptyMessage="No staff members match your filters."
-        />
+        <div className="relative">
+          {isFetching ? (
+            <div className="absolute inset-x-0 top-0 z-10 flex justify-center py-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-sm">
+                <Loader2 className="size-3.5 animate-spin" />
+                Updating results...
+              </div>
+            </div>
+          ) : null}
+          <DataTable
+            columns={columns}
+            data={staff}
+            rowKey={(member) => member.id}
+            emptyMessage={loadError || "No staff members match your filters."}
+          />
+        </div>
       </ListViewLayout>
 
       <AddStaffSheet

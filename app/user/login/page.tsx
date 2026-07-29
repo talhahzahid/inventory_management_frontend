@@ -16,8 +16,6 @@ export default function UserLoginPage() {
         role="user"
         title="Staff Login"
         subtitle="Sign in to handle products, stock updates, and assigned orders."
-        demoEmail="user@abc.com"
-        demoPassword="User@123"
         alternateLogins={[
           { label: "Platform Admin", href: "/admin/login" },
           { label: "Company Admin", href: "/company/login" },

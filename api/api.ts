@@ -1,7 +1,11 @@
 import { getAuthToken } from "@/lib/auth";
 
+// export const API_BASE_URL =
+//   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:9000/api/v1";
+
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:9000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://inventory-management-backend-y0vo.onrender.com/api/v1";
 
 export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -28,6 +32,10 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.statusCode = statusCode;
   }
+}
+
+export function getErrorMessage(error: unknown, fallback = "Something went wrong") {
+  return error instanceof Error ? error.message : fallback;
 }
 
 function buildUrl(endpoint: string) {
@@ -75,8 +83,12 @@ export async function apiRequest<T>({
   if (!response.ok) {
     throw new ApiError(
       result.message || "Request failed",
-      result.statusCode || response.status
+      result.statusCode || response.status,
     );
+  }
+
+  if (result.statusCode >= 400) {
+    throw new ApiError(result.message || "Request failed", result.statusCode);
   }
 
   return result.data;

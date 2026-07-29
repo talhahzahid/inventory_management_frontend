@@ -16,8 +16,6 @@ export default function CompanyLoginPage() {
         role="company_admin"
         title="Company Admin Login"
         subtitle="Sign in to manage your company inventory, team, and daily operations."
-        demoEmail="company@abc.com"
-        demoPassword="Company@123"
         alternateLogins={[
           { label: "Platform Admin", href: "/admin/login" },
           { label: "Staff User", href: "/user/login" },

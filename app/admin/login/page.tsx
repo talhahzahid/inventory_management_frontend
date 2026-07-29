@@ -16,8 +16,6 @@ export default function AdminLoginPage() {
         role="super_admin"
         title="Platform Admin Login"
         subtitle="Sign in to manage companies, subscriptions, and platform analytics."
-        demoEmail="admin@stockflow.com"
-        demoPassword="Admin@123"
         alternateLogins={[
           { label: "Company Admin", href: "/company/login" },
           { label: "Staff User", href: "/user/login" },

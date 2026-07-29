@@ -16,16 +16,19 @@ import {
 import { FormSelect } from "@/components/ui/form-select";
 import { Input } from "@/components/ui/input";
 import type { AddStaffFormValues } from "@/schema/staffSchema";
-import { staffDepartments } from "@/types/team";
+import { staffRoleOptions, staffStatusLabels } from "@/types/team";
+import type { StaffStatus } from "@/types/team";
 
-const departmentOptions = staffDepartments
-  .filter((item) => item !== "All Departments")
-  .map((department) => ({ label: department, value: department }));
+const roleOptions = staffRoleOptions.map((role) => ({
+  label: role.label,
+  value: String(role.id),
+}));
 
-const statusOptions = [
-  { label: "Active", value: "active" },
-  { label: "Send Invite", value: "invited" },
-];
+const statusOptions = (
+  Object.entries(staffStatusLabels) as [StaffStatus, string][]
+)
+  .filter(([value]) => value !== "invited")
+  .map(([value, label]) => ({ label, value }));
 
 type StaffFormFieldsProps = {
   register: UseFormRegister<AddStaffFormValues>;
@@ -52,7 +55,7 @@ export function StaffFormFields({
             >
               <Input
                 id="name"
-                placeholder="e.g. Sara Ahmed"
+                placeholder="e.g. John Doe"
                 aria-invalid={!!errors.name}
                 className={sheetInputClassName}
                 {...register("name")}
@@ -69,7 +72,7 @@ export function StaffFormFields({
               <Input
                 id="email"
                 type="email"
-                placeholder="e.g. sara@company.com"
+                placeholder="e.g. john.doe@mailinator.com"
                 aria-invalid={!!errors.email}
                 className={sheetInputClassName}
                 {...register("email")}
@@ -79,37 +82,39 @@ export function StaffFormFields({
 
           <div className="grid gap-5 sm:grid-cols-2">
             <SheetFormField
-              label="Phone"
-              htmlFor="phone"
-              error={errors.phone?.message}
-              hint="Optional contact number"
+              label="Password"
+              htmlFor="password"
+              required
+              error={errors.password?.message}
+              hint="Minimum 6 characters"
             >
               <Input
-                id="phone"
-                placeholder="e.g. +92 300 1234567"
-                aria-invalid={!!errors.phone}
+                id="password"
+                type="password"
+                placeholder="e.g. John@123"
+                aria-invalid={!!errors.password}
                 className={sheetInputClassName}
-                {...register("phone")}
+                {...register("password")}
               />
             </SheetFormField>
 
             <SheetFormField
-              label="Department"
-              htmlFor="department"
+              label="Role"
+              htmlFor="role_id"
               required
-              error={errors.department?.message}
+              error={errors.role_id?.message}
             >
               <Controller
-                name="department"
+                name="role_id"
                 control={control}
                 render={({ field }) => (
                   <FormSelect
                     className={sheetSelectClassName}
-                    id="department"
+                    id="role_id"
                     value={field.value}
                     onChange={field.onChange}
-                    placeholder="Select department"
-                    options={departmentOptions}
+                    placeholder="Select role"
+                    options={roleOptions}
                   />
                 )}
               />
@@ -121,45 +126,27 @@ export function StaffFormFields({
       <FieldSet className="gap-5">
         <FieldLegend variant="label">Access</FieldLegend>
         <FieldGroup className="gap-5">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <SheetFormField
-              label="Account Status"
-              htmlFor="status"
-              required
-              error={errors.status?.message}
-            >
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <FormSelect
-                    className={sheetSelectClassName}
-                    id="status"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Select status"
-                    options={statusOptions}
-                  />
-                )}
-              />
-            </SheetFormField>
-
-            <SheetFormField
-              label="Temporary Password"
-              htmlFor="password"
-              error={errors.password?.message}
-              hint="Optional — staff can reset on first login"
-            >
-              <Input
-                id="password"
-                type="password"
-                placeholder="Min. 6 characters"
-                aria-invalid={!!errors.password}
-                className={sheetInputClassName}
-                {...register("password")}
-              />
-            </SheetFormField>
-          </div>
+          <SheetFormField
+            label="Account Status"
+            htmlFor="status"
+            required
+            error={errors.status?.message}
+          >
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  className={sheetSelectClassName}
+                  id="status"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select status"
+                  options={statusOptions}
+                />
+              )}
+            />
+          </SheetFormField>
         </FieldGroup>
       </FieldSet>
     </>

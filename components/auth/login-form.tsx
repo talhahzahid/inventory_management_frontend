@@ -9,7 +9,7 @@ import { accentStyles } from "@/components/auth/login-layout";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { login, mapBackendRole } from "@/api/login";
+import { login, getPortalAccessError, mapBackendRole } from "@/api/login";
 import { getDashboardPathForRole, saveSession } from "@/lib/auth";
 import type { AuthUser } from "@/types/auth";
 import { cn } from "@/lib/utils";
@@ -19,16 +19,18 @@ type LoginFormProps = {
   role: UserRole;
   title: string;
   subtitle: string;
-  demoEmail: string;
-  demoPassword: string;
+  demoEmail?: string;
+  demoPassword?: string;
+  showDemoCredentials?: boolean;
   alternateLogins?: Array<{ label: string; href: string }>;
 };
 
 export function LoginForm({
   role,
   subtitle,
-  demoEmail,
-  demoPassword,
+  demoEmail = "",
+  demoPassword = "",
+  showDemoCredentials = false,
   alternateLogins = [],
 }: LoginFormProps) {
   const router = useRouter();
@@ -56,8 +58,8 @@ export function LoginForm({
 
       const mappedRole = mapBackendRole(String(user.role));
 
-      if (!mappedRole) {
-        setError("Your account role is not supported on this platform.");
+      if (!mappedRole || mappedRole !== role) {
+        setError(getPortalAccessError(role));
         return;
       }
 
@@ -185,13 +187,15 @@ export function LoginForm({
         </Button>
       </form>
 
-      <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
-          Demo credentials
-        </p>
-        <p className="mt-1.5 text-sm font-semibold text-slate-800">{demoEmail}</p>
-        <p className="text-sm text-slate-500">{demoPassword}</p>
-      </div>
+      {showDemoCredentials && demoEmail && demoPassword ? (
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
+            Demo credentials
+          </p>
+          <p className="mt-1.5 text-sm font-semibold text-slate-800">{demoEmail}</p>
+          <p className="text-sm text-slate-500">{demoPassword}</p>
+        </div>
+      ) : null}
 
       {alternateLogins.length > 0 ? (
         <div className="space-y-3 border-t border-slate-100 pt-4">

@@ -27,6 +27,7 @@ export type CategoriesListParams = {
   page?: number;
   limit?: number;
   status?: string;
+  search?: string;
 };
 
 export type CategoriesListResponse = {
@@ -50,6 +51,10 @@ export async function fetchCategoriesApi(params?: CategoriesListParams) {
 
   if (params?.status && params.status !== "all") {
     searchParams.set("status", params.status);
+  }
+
+  if (params?.search?.trim()) {
+    searchParams.set("search", params.search.trim());
   }
 
   const query = searchParams.toString();

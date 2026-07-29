@@ -4,12 +4,13 @@ import {
   Download,
   Eye,
   FolderTree,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Plus,
   Power,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { UiButton } from "@/components/Button";
@@ -34,10 +35,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useDebounce } from "@/hooks/use-debounce";
+import { buildCategoryListParams } from "@/lib/category-filters";
 import {
   createCategory,
   deactivateCategory,
-  fetchCategories,
+  fetchCategoriesList,
   updateCategory,
 } from "@/lib/categories";
 import type { AddCategoryFormValues } from "@/schema/categorySchema";
@@ -48,10 +51,11 @@ const PAGE_SIZE = 6;
 
 export function CategoryListScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-  const [sortBy, setSortBy] = useState("updated_desc");
   const [page, setPage] = useState(1);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [isViewCategoryOpen, setIsViewCategoryOpen] = useState(false);
@@ -61,33 +65,43 @@ export function CategoryListScreen() {
   );
   const [loadError, setLoadError] = useState("");
 
-  const loadCategories = () => {
-    setIsLoading(true);
+  const debouncedSearch = useDebounce(search, 400);
 
-    fetchCategories()
-      .then((data) => {
-        setCategories(data);
-        setLoadError("");
-      })
-      .catch((error: unknown) => {
-        setLoadError(
-          error instanceof Error ? error.message : "Unable to load categories."
-        );
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
+  const loadCategories = useCallback(async () => {
+    setIsFetching(true);
+
+    try {
+      const result = await fetchCategoriesList(
+        buildCategoryListParams({
+          page,
+          limit: PAGE_SIZE,
+          search: debouncedSearch,
+          status,
+        })
+      );
+
+      setCategories(result.categories);
+      setTotal(result.total);
+      setLoadError("");
+    } catch (error: unknown) {
+      setLoadError(
+        error instanceof Error ? error.message : "Unable to load categories."
+      );
+    } finally {
+      setIsFetching(false);
+      setIsInitialLoading(false);
+    }
+  }, [debouncedSearch, page, status]);
 
   useEffect(() => {
     loadCategories();
-  }, []);
+  }, [loadCategories]);
 
   const handleAddCategory = async (values: AddCategoryFormValues) => {
-    const category = await createCategory(values);
-    setCategories((current) => [category, ...current]);
+    await createCategory(values);
+    await loadCategories();
     toast.success("Category created successfully", {
-      description: `${category.name} has been added to your catalog.`,
+      description: `${values.name} has been added to your catalog.`,
     });
   };
 
@@ -96,10 +110,8 @@ export function CategoryListScreen() {
     values: AddCategoryFormValues
   ) => {
     const category = await updateCategory(id, values);
-    setCategories((current) =>
-      current.map((item) => (item.id === id ? category : item))
-    );
     setSelectedCategory(category);
+    await loadCategories();
     toast.success("Category updated successfully", {
       description: `${category.name} has been saved.`,
     });
@@ -107,10 +119,8 @@ export function CategoryListScreen() {
 
   const handleDeactivateCategory = async (category: Category) => {
     try {
-      const updated = await deactivateCategory(category.id);
-      setCategories((current) =>
-        current.map((item) => (item.id === category.id ? updated : item))
-      );
+      await deactivateCategory(category.id);
+      await loadCategories();
       toast.success("Category deactivated", {
         description: `${category.name} is now inactive.`,
       });
@@ -133,46 +143,9 @@ export function CategoryListScreen() {
     setIsEditCategoryOpen(true);
   };
 
-  const filteredCategories = useMemo(() => {
-    let result = [...categories];
-
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (category) =>
-          category.name.toLowerCase().includes(query) ||
-          category.slug.toLowerCase().includes(query) ||
-          category.description?.toLowerCase().includes(query)
-      );
-    }
-
-    if (status !== "all") {
-      result = result.filter((category) => category.status === status);
-    }
-
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "name_asc":
-          return a.name.localeCompare(b.name);
-        case "products_desc":
-          return b.productCount - a.productCount;
-        case "updated_desc":
-        default:
-          return b.updatedAt.localeCompare(a.updatedAt);
-      }
-    });
-
-    return result;
-  }, [categories, search, status, sortBy]);
-
-  const paginatedCategories = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filteredCategories.slice(start, start + PAGE_SIZE);
-  }, [filteredCategories, page]);
-
   const stats = useMemo(
     () => [
-      { label: "Total Categories", value: categories.length },
+      { label: "Total Categories", value: total },
       {
         label: "Active",
         value: categories.filter((c) => c.status === "active").length,
@@ -189,7 +162,7 @@ export function CategoryListScreen() {
         tone: "warning" as const,
       },
     ],
-    [categories]
+    [categories, total]
   );
 
   const hasActiveFilters = search.trim() !== "" || status !== "all";
@@ -197,7 +170,6 @@ export function CategoryListScreen() {
   const handleClearFilters = () => {
     setSearch("");
     setStatus("all");
-    setSortBy("updated_desc");
     setPage(1);
   };
 
@@ -226,13 +198,13 @@ export function CategoryListScreen() {
         </span>
       ),
     },
-    {
-      key: "products",
-      header: "Products",
-      render: (category) => (
-        <span className="font-semibold">{category.productCount}</span>
-      ),
-    },
+    // {
+    //   key: "products",
+    //   header: "Products",
+    //   render: (category) => (
+    //     <span className="font-semibold">{category.productCount}</span>
+    //   ),
+    // },
     {
       key: "status",
       header: "Status",
@@ -247,7 +219,7 @@ export function CategoryListScreen() {
     },
     {
       key: "actions",
-      header: "",
+      header: "Action",
       headerClassName: "w-32",
       className: "text-right",
       render: (category) => (
@@ -307,7 +279,7 @@ export function CategoryListScreen() {
     },
   ];
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <CategoryListLoader />;
   }
 
@@ -340,7 +312,7 @@ export function CategoryListScreen() {
               setSearch(value);
               setPage(1);
             }}
-            searchPlaceholder="Search by name, slug, or description..."
+            searchPlaceholder="Search by category name..."
             hasActiveFilters={hasActiveFilters}
             onClear={handleClearFilters}
             filters={[
@@ -360,17 +332,6 @@ export function CategoryListScreen() {
                   ][]).map(([value, label]) => ({ label, value })),
                 ],
               },
-              {
-                id: "sort",
-                label: "Sort By",
-                value: sortBy,
-                onChange: setSortBy,
-                options: [
-                  { label: "Recently Updated", value: "updated_desc" },
-                  { label: "Name A-Z", value: "name_asc" },
-                  { label: "Most Products", value: "products_desc" },
-                ],
-              },
             ]}
           />
         }
@@ -378,17 +339,27 @@ export function CategoryListScreen() {
           <ListViewPagination
             page={page}
             pageSize={PAGE_SIZE}
-            total={filteredCategories.length}
+            total={total}
             onPageChange={setPage}
           />
         }
       >
-        <DataTable
-          columns={columns}
-          data={paginatedCategories}
-          rowKey={(category) => category.id}
-          emptyMessage={loadError || "No categories match your filters."}
-        />
+        <div className="relative">
+          {isFetching ? (
+            <div className="absolute inset-x-0 top-0 z-10 flex justify-center py-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-sm">
+                <Loader2 className="size-3.5 animate-spin" />
+                Updating results...
+              </div>
+            </div>
+          ) : null}
+          <DataTable
+            columns={columns}
+            data={categories}
+            rowKey={(category) => category.id}
+            emptyMessage={loadError || "No categories match your filters."}
+          />
+        </div>
       </ListViewLayout>
 
       <AddCategorySheet
