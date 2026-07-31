@@ -34,7 +34,10 @@ export class ApiError extends Error {
   }
 }
 
-export function getErrorMessage(error: unknown, fallback = "Something went wrong") {
+export function getErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong",
+) {
   return error instanceof Error ? error.message : fallback;
 }
 

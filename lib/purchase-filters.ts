@@ -1,0 +1,36 @@
+import type { PurchasesListParams } from "@/api/purchases";
+
+export type PurchaseFilterInput = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  supplierId?: string;
+  fromDate?: string;
+  toDate?: string;
+  companyId?: string;
+};
+
+export function buildPurchaseListParams(
+  filters: PurchaseFilterInput
+): PurchasesListParams {
+  const params: PurchasesListParams = {};
+
+  if (filters.page) params.page = filters.page;
+  if (filters.limit) params.limit = filters.limit;
+
+  const trimmedSearch = filters.search?.trim();
+  if (trimmedSearch) params.search = trimmedSearch;
+
+  if (filters.supplierId && filters.supplierId !== "all") {
+    params.supplier_id = Number(filters.supplierId);
+  }
+
+  if (filters.fromDate) params.from_date = filters.fromDate;
+  if (filters.toDate) params.to_date = filters.toDate;
+
+  if (filters.companyId && filters.companyId !== "all") {
+    params.company_id = Number(filters.companyId);
+  }
+
+  return params;
+}

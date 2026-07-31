@@ -26,6 +26,7 @@ export type SuppliersListParams = {
   limit?: number;
   status?: string;
   search?: string;
+  company_id?: number;
 };
 
 export type SuppliersListResponse = {
@@ -55,6 +56,10 @@ export async function fetchSuppliersApi(params?: SuppliersListParams) {
     searchParams.set("search", params.search.trim());
   }
 
+  if (params?.company_id) {
+    searchParams.set("company_id", String(params.company_id));
+  }
+
   const query = searchParams.toString();
   const endpoint = query ? `/supplier?${query}` : "/supplier";
 
@@ -81,10 +86,35 @@ export async function fetchSuppliersApi(params?: SuppliersListParams) {
   };
 }
 
-export async function createSupplierApi(payload: CreateSupplierPayload) {
+export async function createSupplierApi(
+  payload: CreateSupplierPayload,
+  companyId?: number
+) {
+  const query = companyId ? `?company_id=${companyId}` : "";
+
   return apiRequest<SupplierApiRecord>({
-    endpoint: "/supplier/create",
+    endpoint: `/supplier/create${query}`,
     method: "POST",
     body: payload,
+  });
+}
+
+export type UpdateSupplierPayload = Partial<CreateSupplierPayload>;
+
+export async function updateSupplierApi(
+  id: string | number,
+  payload: UpdateSupplierPayload
+) {
+  return apiRequest<SupplierApiRecord>({
+    endpoint: `/supplier/${id}`,
+    method: "PUT",
+    body: payload,
+  });
+}
+
+export async function deactivateSupplierApi(id: string | number) {
+  return apiRequest<SupplierApiRecord>({
+    endpoint: `/supplier/${id}`,
+    method: "DELETE",
   });
 }

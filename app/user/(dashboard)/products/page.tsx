@@ -3,9 +3,9 @@ import { ProductListScreen } from "@/components/products/product-list-screen";
 export default function UserProductsPage() {
   return (
     <ProductListScreen
-      badge="My Work"
+      badge="Inventory"
       title="Products"
-      description="View assigned products, stock levels, and availability."
+      description="Browse the product catalog, pricing, and availability."
       readOnly
     />
   );

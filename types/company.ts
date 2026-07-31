@@ -1,26 +1,19 @@
-export type CompanyPlan = "starter" | "pro" | "enterprise";
-export type CompanyStatus = "active" | "trial" | "inactive";
+export type CompanyStatus = "active" | "inactive";
 
 export type Company = {
   id: string;
   name: string;
+  slug: string;
   email: string;
-  adminName: string;
-  adminEmail: string;
-  plan: CompanyPlan;
-  users: number;
+  phone?: string | null;
+  address?: string | null;
+  logo?: string | null;
   status: CompanyStatus;
-  joinedAt: string;
-};
-
-export const companyPlanLabels: Record<CompanyPlan, string> = {
-  starter: "Starter",
-  pro: "Pro",
-  enterprise: "Enterprise",
+  createdAt: string;
+  updatedAt: string;
 };
 
 export const companyStatusLabels: Record<CompanyStatus, string> = {
   active: "Active",
-  trial: "Trial",
   inactive: "Inactive",
 };

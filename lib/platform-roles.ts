@@ -1,32 +1,66 @@
-import { mockPlatformRoles } from "@/data/mock-platform-roles";
+import {
+  createRoleApi,
+  fetchRoleByIdApi,
+  fetchRolesApi,
+  type RoleApiRecord,
+  type RolesListParams,
+} from "@/api/roles";
 import type { AddPlatformRoleFormValues } from "@/schema/platformRoleSchema";
 import type { PlatformRole } from "@/types/platform-role";
 
-const MOCK_DELAY_MS = 900;
-
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function formatDate(value?: string) {
+  if (!value) return new Date().toISOString().slice(0, 10);
+  return value.slice(0, 10);
 }
 
-export async function fetchPlatformRoles(): Promise<PlatformRole[]> {
-  await wait(MOCK_DELAY_MS);
-  return mockPlatformRoles;
+export function mapRoleFromApi(record: RoleApiRecord): PlatformRole {
+  return {
+    id: String(record.id),
+    name: record.name,
+    description: record.description,
+    createdAt: formatDate(record.createdAt),
+    updatedAt: formatDate(record.updatedAt),
+  };
+}
+
+export type RolesListResult = {
+  roles: PlatformRole[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export async function fetchPlatformRolesList(
+  params?: RolesListParams
+): Promise<RolesListResult> {
+  const result = await fetchRolesApi({
+    page: 1,
+    limit: 10,
+    ...params,
+  });
+
+  return {
+    roles: result.data.map(mapRoleFromApi),
+    total: result.total,
+    page: result.page,
+    limit: result.limit,
+    totalPages: result.totalPages,
+  };
+}
+
+export async function fetchPlatformRoleById(id: string): Promise<PlatformRole> {
+  const role = await fetchRoleByIdApi(id);
+  return mapRoleFromApi(role);
 }
 
 export async function createPlatformRole(
   values: AddPlatformRoleFormValues
 ): Promise<PlatformRole> {
-  await wait(MOCK_DELAY_MS);
-
-  return {
-    id: crypto.randomUUID(),
+  const role = await createRoleApi({
     name: values.name,
-    slug: values.slug,
     description: values.description || undefined,
-    scope: values.scope,
-    userCount: 0,
-    permissionCount: 0,
-    status: values.status,
-    updatedAt: new Date().toISOString().slice(0, 10),
-  };
+  });
+
+  return mapRoleFromApi(role);
 }

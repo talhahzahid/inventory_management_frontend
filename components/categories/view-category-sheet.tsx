@@ -20,6 +20,7 @@ type ViewCategorySheetProps = {
   onOpenChange: (open: boolean) => void;
   category: Category | null;
   onEdit?: () => void;
+  readOnly?: boolean;
 };
 
 function DetailItem({
@@ -51,6 +52,7 @@ export function ViewCategorySheet({
   onOpenChange,
   category,
   onEdit,
+  readOnly = false,
 }: ViewCategorySheetProps) {
   if (!category) return null;
 
@@ -70,13 +72,15 @@ export function ViewCategorySheet({
             buttonText="Close"
             onClick={() => onOpenChange(false)}
           />
-          <UiButton
-            type="button"
-            variant="primary"
-            icon={Pencil}
-            buttonText="Edit Category"
-            onClick={onEdit}
-          />
+          {!readOnly && onEdit ? (
+            <UiButton
+              type="button"
+              variant="primary"
+              icon={Pencil}
+              buttonText="Edit Category"
+              onClick={onEdit}
+            />
+          ) : null}
         </>
       }
     >

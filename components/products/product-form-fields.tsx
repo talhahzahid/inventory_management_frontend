@@ -17,28 +17,33 @@ import {
 import { FormSelect } from "@/components/ui/form-select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { AddProductFormValues } from "@/schema/productSchema";
-import { productCategories, productStatusLabels } from "@/types/product";
+import type { EditProductFormValues } from "@/schema/productSchema";
+import { productStatusLabels } from "@/types/product";
 import type { ProductStatus } from "@/types/product";
 
-const categoryOptions = productCategories
-  .filter((item) => item !== "All Categories")
-  .map((category) => ({ label: category, value: category }));
+type SelectOption = {
+  label: string;
+  value: string;
+};
+
+type ProductFormFieldsProps = {
+  register: UseFormRegister<EditProductFormValues>;
+  control: Control<EditProductFormValues>;
+  errors: FieldErrors<EditProductFormValues>;
+  categoryOptions: SelectOption[];
+  supplierOptions: SelectOption[];
+};
 
 const statusOptions = (
   Object.entries(productStatusLabels) as [ProductStatus, string][]
 ).map(([value, label]) => ({ label, value }));
 
-type ProductFormFieldsProps = {
-  register: UseFormRegister<AddProductFormValues>;
-  control: Control<AddProductFormValues>;
-  errors: FieldErrors<AddProductFormValues>;
-};
-
 export function ProductFormFields({
   register,
   control,
   errors,
+  categoryOptions,
+  supplierOptions,
 }: ProductFormFieldsProps) {
   return (
     <>
@@ -54,7 +59,7 @@ export function ProductFormFields({
             >
               <Input
                 id="name"
-                placeholder="e.g. Wireless Mouse"
+                placeholder="e.g. Gaming Laptop"
                 aria-invalid={!!errors.name}
                 className={sheetInputClassName}
                 {...register("name")}
@@ -70,7 +75,7 @@ export function ProductFormFields({
             >
               <Input
                 id="sku"
-                placeholder="e.g. SKU-1001"
+                placeholder="e.g. SKU-001"
                 aria-invalid={!!errors.sku}
                 className={sheetInputClassName}
                 {...register("sku")}
@@ -81,16 +86,16 @@ export function ProductFormFields({
           <div className="grid gap-5 sm:grid-cols-2">
             <SheetFormField
               label="Category"
-              htmlFor="category"
+              htmlFor="category_id"
               required
-              error={errors.category?.message}
+              error={errors.category_id?.message}
             >
               <Controller
-                name="category"
+                name="category_id"
                 control={control}
                 render={({ field }) => (
                   <FormSelect
-                    id="category"
+                    id="category_id"
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Select category"
@@ -103,16 +108,23 @@ export function ProductFormFields({
 
             <SheetFormField
               label="Supplier"
-              htmlFor="supplier"
+              htmlFor="supplier_id"
               required
-              error={errors.supplier?.message}
+              error={errors.supplier_id?.message}
             >
-              <Input
-                id="supplier"
-                placeholder="e.g. TechParts Ltd"
-                aria-invalid={!!errors.supplier}
-                className={sheetInputClassName}
-                {...register("supplier")}
+              <Controller
+                name="supplier_id"
+                control={control}
+                render={({ field }) => (
+                  <FormSelect
+                    id="supplier_id"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select supplier"
+                    options={supplierOptions}
+                    className={sheetSelectClassName}
+                  />
+                )}
               />
             </SheetFormField>
           </div>
@@ -120,41 +132,42 @@ export function ProductFormFields({
       </FieldSet>
 
       <FieldSet className="gap-5">
-        <FieldLegend variant="label">Pricing & Stock</FieldLegend>
+        <FieldLegend variant="label">Pricing</FieldLegend>
         <FieldGroup className="gap-5">
           <div className="grid gap-5 sm:grid-cols-3">
             <SheetFormField
-              label="Price"
-              htmlFor="price"
+              label="Purchase Price"
+              htmlFor="purchase_price"
               required
-              error={errors.price?.message}
+              error={errors.purchase_price?.message}
             >
               <Input
-                id="price"
+                id="purchase_price"
                 type="number"
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                aria-invalid={!!errors.price}
+                aria-invalid={!!errors.purchase_price}
                 className={sheetInputClassName}
-                {...register("price", { valueAsNumber: true })}
+                {...register("purchase_price", { valueAsNumber: true })}
               />
             </SheetFormField>
 
             <SheetFormField
-              label="Stock"
-              htmlFor="stock"
+              label="Selling Price"
+              htmlFor="selling_price"
               required
-              error={errors.stock?.message}
+              error={errors.selling_price?.message}
             >
               <Input
-                id="stock"
+                id="selling_price"
                 type="number"
+                step="0.01"
                 min="0"
-                placeholder="0"
-                aria-invalid={!!errors.stock}
+                placeholder="0.00"
+                aria-invalid={!!errors.selling_price}
                 className={sheetInputClassName}
-                {...register("stock", { valueAsNumber: true })}
+                {...register("selling_price", { valueAsNumber: true })}
               />
             </SheetFormField>
 

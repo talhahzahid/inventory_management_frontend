@@ -19,11 +19,8 @@ type AddPlatformRoleSheetProps = {
 };
 
 const defaultValues: AddPlatformRoleFormValues = {
-  name: "",
-  slug: "",
+  name: "employee",
   description: "",
-  scope: "platform",
-  status: "active",
 };
 
 export function AddPlatformRoleSheet({
@@ -43,9 +40,7 @@ export function AddPlatformRoleSheet({
   });
 
   const handleClose = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      reset(defaultValues);
-    }
+    if (!nextOpen) reset(defaultValues);
     onOpenChange(nextOpen);
   };
 
@@ -59,10 +54,10 @@ export function AddPlatformRoleSheet({
     <SheetLayout
       open={open}
       onOpenChange={handleClose}
-      badge="Access Control"
+      badge="System"
       title="Add Role"
-      description="Create a new platform or company role with defined access scope."
-      size="2xl"
+      description="Create a system role used for permission mapping."
+      size="lg"
       footer={
         <>
           <UiButton

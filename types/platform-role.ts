@@ -1,24 +1,24 @@
-export type PlatformRoleScope = "platform" | "company";
-export type PlatformRoleStatus = "active" | "inactive";
+export type PlatformRoleName =
+  | "superAdmin"
+  | "admin"
+  | "manager"
+  | "employee";
 
 export type PlatformRole = {
   id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  scope: PlatformRoleScope;
-  userCount: number;
-  permissionCount: number;
-  status: PlatformRoleStatus;
+  name: PlatformRoleName;
+  description?: string | null;
+  createdAt: string;
   updatedAt: string;
 };
 
-export const platformRoleScopeLabels: Record<PlatformRoleScope, string> = {
-  platform: "Platform",
-  company: "Company",
+export const platformRoleNameLabels: Record<PlatformRoleName, string> = {
+  superAdmin: "Super Admin",
+  admin: "Admin",
+  manager: "Manager",
+  employee: "Employee",
 };
 
-export const platformRoleStatusLabels: Record<PlatformRoleStatus, string> = {
-  active: "Active",
-  inactive: "Inactive",
-};
+export const platformRoleNameOptions = (
+  Object.entries(platformRoleNameLabels) as [PlatformRoleName, string][]
+).map(([value, label]) => ({ label, value }));

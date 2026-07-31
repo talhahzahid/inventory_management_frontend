@@ -14,6 +14,7 @@ type ListViewFiltersProps = {
   onSearchChange: (value: string) => void;
   searchPlaceholder?: string;
   filters?: ListFilterConfig[];
+  children?: React.ReactNode;
   onClear?: () => void;
   hasActiveFilters?: boolean;
   className?: string;
@@ -24,6 +25,7 @@ export function ListViewFilters({
   onSearchChange,
   searchPlaceholder = "Search...",
   filters = [],
+  children,
   onClear,
   hasActiveFilters = false,
   className,
@@ -35,7 +37,7 @@ export function ListViewFilters({
         className
       )}
     >
-      <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-end">
+      <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-end md:flex-wrap">
         <Field className="min-w-[220px] flex-1 gap-2">
           <FieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Search
@@ -69,6 +71,8 @@ export function ListViewFilters({
             />
           </Field>
         ))}
+
+        {children}
       </div>
 
       <div className="flex items-center gap-2 md:pb-0.5">

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { UiButton } from "@/components/Button";
@@ -18,13 +19,22 @@ type AddCompanySheetProps = {
   onSubmit?: (values: AddCompanyFormValues) => void | Promise<void>;
 };
 
+function slugify(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 const defaultValues: AddCompanyFormValues = {
   name: "",
+  slug: "",
   email: "",
-  adminName: "",
-  adminEmail: "",
-  plan: "starter",
-  status: "trial",
+  phone: "",
+  address: "",
+  logo: "",
+  status: "active",
 };
 
 export function AddCompanySheet({
@@ -37,16 +47,23 @@ export function AddCompanySheet({
     control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<AddCompanyFormValues>({
     resolver: zodResolver(addCompanySchema),
     defaultValues,
   });
 
+  const name = watch("name");
+
+  useEffect(() => {
+    if (!open) return;
+    setValue("slug", slugify(name), { shouldValidate: false });
+  }, [name, open, setValue]);
+
   const handleClose = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      reset(defaultValues);
-    }
+    if (!nextOpen) reset(defaultValues);
     onOpenChange(nextOpen);
   };
 
@@ -62,7 +79,7 @@ export function AddCompanySheet({
       onOpenChange={handleClose}
       badge="Platform"
       title="Add Company"
-      description="Register a new company on the StockFlow platform."
+      description="Register a new company. An admin login will be emailed automatically."
       size="2xl"
       footer={
         <>

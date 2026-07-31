@@ -6,16 +6,20 @@ import { cn } from "@/lib/utils";
 type StatCardProps = {
   title: string;
   value: string;
-  change: string;
-  trend: "up" | "down";
+  change?: string;
+  trend?: "up" | "down";
+  hint?: string;
   icon: LucideIcon;
   tone?: "indigo" | "emerald" | "amber" | "rose";
 };
 
 const toneStyles = {
-  indigo: "bg-linear-to-br from-indigo-500/15 to-indigo-600/5 text-indigo-600 ring-1 ring-indigo-500/10",
-  emerald: "bg-linear-to-br from-emerald-500/15 to-emerald-600/5 text-emerald-600 ring-1 ring-emerald-500/10",
-  amber: "bg-linear-to-br from-amber-500/15 to-amber-600/5 text-amber-600 ring-1 ring-amber-500/10",
+  indigo:
+    "bg-linear-to-br from-indigo-500/15 to-indigo-600/5 text-indigo-600 ring-1 ring-indigo-500/10",
+  emerald:
+    "bg-linear-to-br from-emerald-500/15 to-emerald-600/5 text-emerald-600 ring-1 ring-emerald-500/10",
+  amber:
+    "bg-linear-to-br from-amber-500/15 to-amber-600/5 text-amber-600 ring-1 ring-amber-500/10",
   rose: "bg-linear-to-br from-rose-500/15 to-rose-600/5 text-rose-600 ring-1 ring-rose-500/10",
 };
 
@@ -24,9 +28,11 @@ export function StatCard({
   value,
   change,
   trend,
+  hint,
   icon: Icon,
   tone = "indigo",
 }: StatCardProps) {
+  const showTrend = Boolean(change && trend);
   const positive = trend === "up";
 
   return (
@@ -48,17 +54,23 @@ export function StatCard({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-1.5 text-xs font-medium">
-        {positive ? (
-          <ArrowUpRight className="size-3.5 text-emerald-600" />
-        ) : (
-          <ArrowDownRight className="size-3.5 text-amber-600" />
-        )}
-        <span className={positive ? "text-emerald-600" : "text-amber-600"}>
-          {change}
-        </span>
-        <span className="font-normal text-muted-foreground">vs last month</span>
-      </div>
+      {showTrend ? (
+        <div className="mt-4 flex items-center gap-1.5 text-xs font-medium">
+          {positive ? (
+            <ArrowUpRight className="size-3.5 text-emerald-600" />
+          ) : (
+            <ArrowDownRight className="size-3.5 text-amber-600" />
+          )}
+          <span className={positive ? "text-emerald-600" : "text-amber-600"}>
+            {change}
+          </span>
+          <span className="font-normal text-muted-foreground">
+            vs last month
+          </span>
+        </div>
+      ) : hint ? (
+        <p className="mt-4 text-xs text-muted-foreground">{hint}</p>
+      ) : null}
     </article>
   );
 }

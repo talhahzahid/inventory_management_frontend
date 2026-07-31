@@ -1,11 +1,11 @@
 import {
   BarChart3,
   Building2,
-  CreditCard,
   LayoutDashboard,
   Package,
   Settings,
   Shield,
+  ShoppingBag,
   ShoppingCart,
   Tags,
   Truck,
@@ -37,7 +37,7 @@ export const loginPortals: LoginPortal[] = [
   {
     role: "super_admin",
     title: "Platform Admin",
-    description: "Manage companies, subscriptions, and platform analytics.",
+    description: "Manage companies, roles, and cross-tenant inventory data.",
     href: "/admin/login",
     badge: "Super Admin",
     accent: "slate",
@@ -53,7 +53,7 @@ export const loginPortals: LoginPortal[] = [
   {
     role: "user",
     title: "Staff Login",
-    description: "Access daily tasks, stock updates, and order handling.",
+    description: "Create sales and view catalog, stock, and purchase history.",
     href: "/user/login",
     badge: "Team Member",
     accent: "emerald",
@@ -66,16 +66,18 @@ const adminNav: NavGroup[] = [
     items: [
       { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { title: "Companies", href: "/admin/companies", icon: Building2 },
-      { title: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
-      { title: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+      { title: "Roles", href: "/admin/roles", icon: Shield },
     ],
   },
   {
-    label: "System",
+    label: "Tenant Data",
     items: [
-      { title: "Roles", href: "/admin/roles", icon: Shield },
-      { title: "Platform Users", href: "/admin/users", icon: Users },
-      { title: "Settings", href: "/admin/settings", icon: Settings },
+      { title: "Products", href: "/admin/products", icon: Package },
+      { title: "Categories", href: "/admin/categories", icon: Tags },
+      { title: "Inventory", href: "/admin/inventory", icon: Warehouse },
+      { title: "Suppliers", href: "/admin/suppliers", icon: Truck },
+      { title: "Sales", href: "/admin/sales", icon: ShoppingBag },
+      { title: "Purchases", href: "/admin/purchases", icon: ShoppingCart },
     ],
   },
 ];
@@ -90,14 +92,15 @@ const companyNav: NavGroup[] = [
     items: [
       { title: "Products", href: "/company/products", icon: Package },
       { title: "Categories", href: "/company/categories", icon: Tags },
-      { title: "Stock", href: "/company/inventory", icon: Warehouse },
+      { title: "Inventory", href: "/company/inventory", icon: Warehouse },
     ],
   },
   {
     label: "Operations",
     items: [
       { title: "Suppliers", href: "/company/suppliers", icon: Truck },
-      { title: "Purchase Orders", href: "/company/orders", icon: ShoppingCart },
+      { title: "Sales", href: "/company/sales", icon: ShoppingBag },
+      { title: "Purchases", href: "/company/purchases", icon: ShoppingCart },
       { title: "Reports", href: "/company/reports", icon: BarChart3 },
     ],
   },
@@ -112,17 +115,24 @@ const companyNav: NavGroup[] = [
 
 const userNav: NavGroup[] = [
   {
-    label: "My Work",
+    label: "Overview",
+    items: [{ title: "Dashboard", href: "/user", icon: LayoutDashboard }],
+  },
+  {
+    label: "Inventory",
     items: [
-      { title: "Dashboard", href: "/user", icon: LayoutDashboard },
       { title: "Products", href: "/user/products", icon: Package },
-      { title: "Stock", href: "/user/stock", icon: Warehouse },
-      { title: "Orders", href: "/user/orders", icon: ShoppingCart },
+      { title: "Categories", href: "/user/categories", icon: Tags },
+      { title: "Inventory", href: "/user/inventory", icon: Warehouse },
     ],
   },
   {
-    label: "Account",
-    items: [{ title: "Profile", href: "/user/profile", icon: Settings }],
+    label: "Operations",
+    items: [
+      { title: "Suppliers", href: "/user/suppliers", icon: Truck },
+      { title: "Sales", href: "/user/sales", icon: ShoppingBag },
+      { title: "Purchases", href: "/user/purchases", icon: ShoppingCart },
+    ],
   },
 ];
 
@@ -140,7 +150,7 @@ export const roleNavConfig: Record<
     basePath: "/admin",
     loginPath: "/admin/login",
     portalTitle: "Platform Control Center",
-    portalSubtitle: "Monitor every company, plan, and platform metric.",
+    portalSubtitle: "Manage companies, roles, and cross-tenant data.",
     navGroups: adminNav,
   },
   company_admin: {
@@ -154,7 +164,7 @@ export const roleNavConfig: Record<
     basePath: "/user",
     loginPath: "/user/login",
     portalTitle: "Staff Workspace",
-    portalSubtitle: "Handle daily inventory tasks and order updates.",
+    portalSubtitle: "Create sales and view catalog, stock, and purchases.",
     navGroups: userNav,
   },
 };

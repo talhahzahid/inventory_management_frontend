@@ -1,6 +1,8 @@
 import {
   createSupplierApi,
+  deactivateSupplierApi,
   fetchSuppliersApi,
+  updateSupplierApi,
   type SupplierApiRecord,
   type SuppliersListParams,
 } from "@/api/suppliers";
@@ -53,9 +55,28 @@ export async function fetchSuppliersList(
 }
 
 export async function createSupplier(
+  values: AddSupplierFormValues,
+  companyId?: number
+): Promise<Supplier> {
+  const supplier = await createSupplierApi(
+    {
+      name: values.name,
+      phone: values.phone,
+      email: values.email,
+      address: values.address,
+      status: values.status,
+    },
+    companyId
+  );
+
+  return mapSupplierFromApi(supplier);
+}
+
+export async function updateSupplier(
+  id: string,
   values: AddSupplierFormValues
 ): Promise<Supplier> {
-  const supplier = await createSupplierApi({
+  const supplier = await updateSupplierApi(id, {
     name: values.name,
     phone: values.phone,
     email: values.email,
@@ -63,5 +84,10 @@ export async function createSupplier(
     status: values.status,
   });
 
+  return mapSupplierFromApi(supplier);
+}
+
+export async function deactivateSupplier(id: string): Promise<Supplier> {
+  const supplier = await deactivateSupplierApi(id);
   return mapSupplierFromApi(supplier);
 }

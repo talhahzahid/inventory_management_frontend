@@ -36,7 +36,24 @@ import { supplierStatusLabels } from "@/types/supplier";
 
 const PAGE_SIZE = 6;
 
-export function SupplierListScreen() {
+type SupplierListScreenProps = {
+  badge?: string;
+  title?: string;
+  description?: string;
+  readOnly?: boolean;
+  companyId?: string;
+  /** Super admin must pick a company before creating suppliers */
+  requireCompanyForCreate?: boolean;
+};
+
+export function SupplierListScreen({
+  badge = "Operations",
+  title = "Suppliers",
+  description = "Manage your supplier contacts for purchase orders and inventory sourcing.",
+  readOnly = false,
+  companyId = "all",
+  requireCompanyForCreate = false,
+}: SupplierListScreenProps) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [total, setTotal] = useState(0);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -63,6 +80,7 @@ export function SupplierListScreen() {
           limit: PAGE_SIZE,
           search: debouncedSearch,
           status,
+          companyId,
         })
       );
 
@@ -77,14 +95,20 @@ export function SupplierListScreen() {
       setIsFetching(false);
       setIsInitialLoading(false);
     }
-  }, [debouncedSearch, page, status]);
+  }, [companyId, debouncedSearch, page, status]);
 
   useEffect(() => {
     loadSuppliers();
   }, [loadSuppliers]);
 
   const handleAddSupplier = async (values: AddSupplierFormValues) => {
-    await createSupplier(values);
+    if (requireCompanyForCreate && companyId === "all") {
+      throw new Error("Select a company before creating a supplier.");
+    }
+
+    const scopedCompanyId =
+      companyId !== "all" ? Number(companyId) : undefined;
+    await createSupplier(values, scopedCompanyId);
     await loadSuppliers();
     toast.success("Supplier created successfully", {
       description: `${values.name} has been added to your supplier list.`,
@@ -197,19 +221,24 @@ export function SupplierListScreen() {
       <ListViewLayout
         header={
           <ListViewHeader
-            badge="Operations"
-            title="Suppliers"
-            description="Manage your supplier contacts for purchase orders and inventory sourcing."
+            badge={badge}
+            title={title}
+            description={description}
             actions={
-              <>
+              readOnly ||
+              (requireCompanyForCreate && companyId === "all") ? (
                 <UiButton variant="outline" buttonText="Export" icon={Download} />
-                <UiButton
-                  variant="primary"
-                  buttonText="Add Supplier"
-                  icon={Plus}
-                  onClick={() => setIsAddSupplierOpen(true)}
-                />
-              </>
+              ) : (
+                <>
+                  <UiButton variant="outline" buttonText="Export" icon={Download} />
+                  <UiButton
+                    variant="primary"
+                    buttonText="Add Supplier"
+                    icon={Plus}
+                    onClick={() => setIsAddSupplierOpen(true)}
+                  />
+                </>
+              )
             }
           />
         }
@@ -271,11 +300,14 @@ export function SupplierListScreen() {
         </div>
       </ListViewLayout>
 
-      <AddSupplierSheet
-        open={isAddSupplierOpen}
-        onOpenChange={setIsAddSupplierOpen}
-        onSubmit={handleAddSupplier}
-      />
+      {!readOnly &&
+      !(requireCompanyForCreate && companyId === "all") ? (
+        <AddSupplierSheet
+          open={isAddSupplierOpen}
+          onOpenChange={setIsAddSupplierOpen}
+          onSubmit={handleAddSupplier}
+        />
+      ) : null}
 
       <ViewSupplierSheet
         open={isViewSupplierOpen}

@@ -1,15 +1,22 @@
 "use client";
 
-import { Download, MoreHorizontal, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Building2,
+  Download,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Power,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { UiButton } from "@/components/Button";
 import { AddCompanySheet } from "@/components/companies/add-company-sheet";
-import {
-  CompanyPlanBadge,
-  CompanyStatusBadge,
-} from "@/components/companies/company-badges";
+import { CompanyStatusBadge } from "@/components/companies/company-badges";
 import { CompanyListLoader } from "@/components/companies/company-list-loader";
+import { EditCompanySheet } from "@/components/companies/edit-company-sheet";
 import {
   DataTable,
   ListViewFilters,
@@ -26,158 +33,143 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createCompany, fetchCompanies } from "@/lib/companies";
-import type { AddCompanyFormValues } from "@/schema/companySchema";
-import type { Company, CompanyPlan, CompanyStatus } from "@/types/company";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
-  companyPlanLabels,
-  companyStatusLabels,
-} from "@/types/company";
+  createCompany,
+  deactivateCompany,
+  fetchCompaniesList,
+  updateCompany,
+} from "@/lib/companies";
+import type { AddCompanyFormValues } from "@/schema/companySchema";
+import type { Company, CompanyStatus } from "@/types/company";
+import { companyStatusLabels } from "@/types/company";
 
 const PAGE_SIZE = 6;
 
 export function CompanyListScreen() {
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [search, setSearch] = useState("");
-  const [plan, setPlan] = useState("all");
   const [status, setStatus] = useState("all");
-  const [sortBy, setSortBy] = useState("joined_desc");
   const [page, setPage] = useState(1);
-  const [isAddCompanyOpen, setIsAddCompanyOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [loadError, setLoadError] = useState("");
+
+  const debouncedSearch = useDebounce(search, 400);
+
+  const loadCompanies = useCallback(async () => {
+    setIsFetching(true);
+    try {
+      const result = await fetchCompaniesList({
+        page,
+        limit: PAGE_SIZE,
+        search: debouncedSearch || undefined,
+        status,
+      });
+      setCompanies(result.companies);
+      setTotal(result.total);
+      setLoadError("");
+    } catch (error: unknown) {
+      setLoadError(
+        error instanceof Error ? error.message : "Unable to load companies."
+      );
+    } finally {
+      setIsFetching(false);
+      setIsInitialLoading(false);
+    }
+  }, [debouncedSearch, page, status]);
 
   useEffect(() => {
-    let cancelled = false;
+    loadCompanies();
+  }, [loadCompanies]);
 
-    fetchCompanies()
-      .then((data) => {
-        if (!cancelled) {
-          setCompanies(data);
-          setIsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleAddCompany = async (values: AddCompanyFormValues) => {
-    const company = await createCompany(values);
-    setCompanies((current) => [company, ...current]);
+  const handleAdd = async (values: AddCompanyFormValues) => {
+    await createCompany(values);
+    await loadCompanies();
+    toast.success("Company created successfully", {
+      description: `${values.name} has been registered. Admin credentials were emailed.`,
+    });
   };
 
-  const filteredCompanies = useMemo(() => {
-    let result = [...companies];
+  const handleUpdate = async (id: string, values: AddCompanyFormValues) => {
+    const company = await updateCompany(id, values);
+    setSelectedCompany(company);
+    await loadCompanies();
+    toast.success("Company updated successfully", {
+      description: `${company.name} has been saved.`,
+    });
+  };
 
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (company) =>
-          company.name.toLowerCase().includes(query) ||
-          company.email.toLowerCase().includes(query) ||
-          company.adminName.toLowerCase().includes(query) ||
-          company.adminEmail.toLowerCase().includes(query)
+  const handleDeactivate = async (company: Company) => {
+    try {
+      await deactivateCompany(company.id);
+      await loadCompanies();
+      toast.success("Company deactivated", {
+        description: `${company.name} is now inactive.`,
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to deactivate company."
       );
     }
-
-    if (plan !== "all") {
-      result = result.filter((company) => company.plan === plan);
-    }
-
-    if (status !== "all") {
-      result = result.filter((company) => company.status === status);
-    }
-
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "name_asc":
-          return a.name.localeCompare(b.name);
-        case "users_desc":
-          return b.users - a.users;
-        case "joined_desc":
-        default:
-          return b.joinedAt.localeCompare(a.joinedAt);
-      }
-    });
-
-    return result;
-  }, [companies, search, plan, status, sortBy]);
-
-  const paginatedCompanies = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filteredCompanies.slice(start, start + PAGE_SIZE);
-  }, [filteredCompanies, page]);
+  };
 
   const stats = useMemo(
     () => [
-      { label: "Total Companies", value: companies.length },
+      { label: "Total Companies", value: total },
       {
         label: "Active",
         value: companies.filter((c) => c.status === "active").length,
         tone: "success" as const,
       },
       {
-        label: "On Trial",
-        value: companies.filter((c) => c.status === "trial").length,
-        tone: "warning" as const,
+        label: "Inactive",
+        value: companies.filter((c) => c.status === "inactive").length,
+        tone: "danger" as const,
       },
       {
-        label: "Total Users",
-        value: companies.reduce((sum, c) => sum + c.users, 0),
-        tone: "default" as const,
+        label: "On This Page",
+        value: companies.length,
+        tone: "warning" as const,
       },
     ],
-    [companies]
+    [companies, total]
   );
 
-  const hasActiveFilters =
-    search.trim() !== "" || plan !== "all" || status !== "all";
-
-  const handleClearFilters = () => {
-    setSearch("");
-    setPlan("all");
-    setStatus("all");
-    setSortBy("joined_desc");
-    setPage(1);
-  };
+  const hasActiveFilters = search.trim() !== "" || status !== "all";
 
   const columns: DataTableColumn<Company>[] = [
     {
       key: "company",
       header: "Company",
       render: (company) => (
-        <div>
-          <p className="font-semibold text-foreground">{company.name}</p>
-          <p className="text-xs text-muted-foreground">{company.email}</p>
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+            <Building2 className="size-4" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">{company.name}</p>
+            <p className="text-xs text-muted-foreground">{company.slug}</p>
+          </div>
         </div>
       ),
     },
     {
-      key: "admin",
-      header: "Admin",
+      key: "email",
+      header: "Email",
       render: (company) => (
-        <div>
-          <p className="font-medium">{company.adminName}</p>
-          <p className="text-xs text-muted-foreground">{company.adminEmail}</p>
-        </div>
+        <span className="text-muted-foreground">{company.email}</span>
       ),
     },
     {
-      key: "plan",
-      header: "Plan",
-      render: (company) => <CompanyPlanBadge plan={company.plan} />,
-    },
-    {
-      key: "users",
-      header: "Users",
+      key: "phone",
+      header: "Phone",
       render: (company) => (
-        <span className="font-semibold">{company.users}</span>
+        <span className="text-muted-foreground">{company.phone || "—"}</span>
       ),
     },
     {
@@ -186,44 +178,68 @@ export function CompanyListScreen() {
       render: (company) => <CompanyStatusBadge status={company.status} />,
     },
     {
-      key: "joined",
-      header: "Joined",
+      key: "updated",
+      header: "Updated",
       render: (company) => (
-        <span className="text-muted-foreground">{company.joinedAt}</span>
+        <span className="text-muted-foreground">{company.updatedAt}</span>
       ),
     },
     {
       key: "actions",
-      header: "",
-      headerClassName: "w-12",
+      header: "Action",
+      headerClassName: "w-32",
       className: "text-right",
-      render: () => (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="rounded-lg"
-                aria-label="Open actions"
-              />
-            }
+      render: (company) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
+            aria-label={`Edit ${company.name}`}
+            onClick={() => {
+              setSelectedCompany(company);
+              setIsEditOpen(true);
+            }}
           >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="rounded-xl">
-            <DropdownMenuItem>View company</DropdownMenuItem>
-            <DropdownMenuItem>Edit plan</DropdownMenuItem>
-            <DropdownMenuItem>Deactivate</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <Pencil className="size-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-lg"
+                  aria-label="Open actions"
+                />
+              }
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="rounded-xl">
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedCompany(company);
+                  setIsEditOpen(true);
+                }}
+              >
+                <Pencil className="size-4" />
+                Edit company
+              </DropdownMenuItem>
+              {company.status === "active" ? (
+                <DropdownMenuItem onClick={() => handleDeactivate(company)}>
+                  <Power className="size-4" />
+                  Deactivate
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
 
-  if (isLoading) {
-    return <CompanyListLoader />;
-  }
+  if (isInitialLoading) return <CompanyListLoader />;
 
   return (
     <>
@@ -232,7 +248,7 @@ export function CompanyListScreen() {
           <ListViewHeader
             badge="Platform"
             title="Companies"
-            description="Manage registered companies, subscriptions, and platform tenants."
+            description="Manage tenant companies on the StockFlow platform."
             actions={
               <>
                 <UiButton variant="outline" buttonText="Export" icon={Download} />
@@ -240,7 +256,7 @@ export function CompanyListScreen() {
                   variant="primary"
                   buttonText="Add Company"
                   icon={Plus}
-                  onClick={() => setIsAddCompanyOpen(true)}
+                  onClick={() => setIsAddOpen(true)}
                 />
               </>
             }
@@ -254,26 +270,14 @@ export function CompanyListScreen() {
               setSearch(value);
               setPage(1);
             }}
-            searchPlaceholder="Search by company, admin, or email..."
+            searchPlaceholder="Search by company name or email..."
             hasActiveFilters={hasActiveFilters}
-            onClear={handleClearFilters}
+            onClear={() => {
+              setSearch("");
+              setStatus("all");
+              setPage(1);
+            }}
             filters={[
-              {
-                id: "plan",
-                label: "Plan",
-                value: plan,
-                onChange: (value) => {
-                  setPlan(value);
-                  setPage(1);
-                },
-                options: [
-                  { label: "All Plans", value: "all" },
-                  ...(Object.entries(companyPlanLabels) as [
-                    CompanyPlan,
-                    string,
-                  ][]).map(([value, label]) => ({ label, value })),
-                ],
-              },
               {
                 id: "status",
                 label: "Status",
@@ -290,17 +294,6 @@ export function CompanyListScreen() {
                   ][]).map(([value, label]) => ({ label, value })),
                 ],
               },
-              {
-                id: "sort",
-                label: "Sort By",
-                value: sortBy,
-                onChange: setSortBy,
-                options: [
-                  { label: "Recently Joined", value: "joined_desc" },
-                  { label: "Name A-Z", value: "name_asc" },
-                  { label: "Most Users", value: "users_desc" },
-                ],
-              },
             ]}
           />
         }
@@ -308,23 +301,39 @@ export function CompanyListScreen() {
           <ListViewPagination
             page={page}
             pageSize={PAGE_SIZE}
-            total={filteredCompanies.length}
+            total={total}
             onPageChange={setPage}
           />
         }
       >
-        <DataTable
-          columns={columns}
-          data={paginatedCompanies}
-          rowKey={(company) => company.id}
-          emptyMessage="No companies match your filters."
-        />
+        <div className="relative">
+          {isFetching ? (
+            <div className="absolute inset-x-0 top-0 z-10 flex justify-center py-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-sm">
+                <Loader2 className="size-3.5 animate-spin" />
+                Updating results...
+              </div>
+            </div>
+          ) : null}
+          <DataTable
+            columns={columns}
+            data={companies}
+            rowKey={(company) => company.id}
+            emptyMessage={loadError || "No companies match your filters."}
+          />
+        </div>
       </ListViewLayout>
 
       <AddCompanySheet
-        open={isAddCompanyOpen}
-        onOpenChange={setIsAddCompanyOpen}
-        onSubmit={handleAddCompany}
+        open={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        onSubmit={handleAdd}
+      />
+      <EditCompanySheet
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        company={selectedCompany}
+        onSubmit={handleUpdate}
       />
     </>
   );

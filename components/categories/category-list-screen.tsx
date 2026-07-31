@@ -49,7 +49,21 @@ import { categoryStatusLabels } from "@/types/category";
 
 const PAGE_SIZE = 6;
 
-export function CategoryListScreen() {
+type CategoryListScreenProps = {
+  badge?: string;
+  title?: string;
+  description?: string;
+  readOnly?: boolean;
+  companyId?: string;
+};
+
+export function CategoryListScreen({
+  badge = "Inventory",
+  title = "Categories",
+  description = "Organize your product catalog with categories and keep inventory structured.",
+  readOnly = false,
+  companyId = "all",
+}: CategoryListScreenProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [total, setTotal] = useState(0);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -77,6 +91,7 @@ export function CategoryListScreen() {
           limit: PAGE_SIZE,
           search: debouncedSearch,
           status,
+          companyId,
         })
       );
 
@@ -91,7 +106,7 @@ export function CategoryListScreen() {
       setIsFetching(false);
       setIsInitialLoading(false);
     }
-  }, [debouncedSearch, page, status]);
+  }, [companyId, debouncedSearch, page, status]);
 
   useEffect(() => {
     loadCategories();
@@ -220,10 +235,10 @@ export function CategoryListScreen() {
     {
       key: "actions",
       header: "Action",
-      headerClassName: "w-32",
+      headerClassName: readOnly ? "w-16" : "w-32",
       className: "text-right",
-      render: (category) => (
-        <div className="flex items-center justify-end gap-1">
+      render: (category) =>
+        readOnly ? (
           <Button
             variant="ghost"
             size="icon-sm"
@@ -233,49 +248,60 @@ export function CategoryListScreen() {
           >
             <Eye className="size-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
-            aria-label={`Edit ${category.name}`}
-            onClick={() => openEditCategory(category)}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-lg"
-                  aria-label="Open actions"
-                />
-              }
+        ) : (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
+              aria-label={`View ${category.name}`}
+              onClick={() => openViewCategory(category)}
             >
-              <MoreHorizontal className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem onClick={() => openViewCategory(category)}>
-                <Eye className="size-4" />
-                View category
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => openEditCategory(category)}>
-                <Pencil className="size-4" />
-                Edit category
-              </DropdownMenuItem>
-              {category.status === "active" ? (
-                <DropdownMenuItem
-                  onClick={() => handleDeactivateCategory(category)}
-                >
-                  <Power className="size-4" />
-                  Deactivate
+              <Eye className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
+              aria-label={`Edit ${category.name}`}
+              onClick={() => openEditCategory(category)}
+            >
+              <Pencil className="size-4" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="rounded-lg"
+                    aria-label="Open actions"
+                  />
+                }
+              >
+                <MoreHorizontal className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                <DropdownMenuItem onClick={() => openViewCategory(category)}>
+                  <Eye className="size-4" />
+                  View category
                 </DropdownMenuItem>
-              ) : null}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
+                <DropdownMenuItem onClick={() => openEditCategory(category)}>
+                  <Pencil className="size-4" />
+                  Edit category
+                </DropdownMenuItem>
+                {category.status === "active" ? (
+                  <DropdownMenuItem
+                    onClick={() => handleDeactivateCategory(category)}
+                  >
+                    <Power className="size-4" />
+                    Deactivate
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ),
     },
   ];
 
@@ -288,19 +314,23 @@ export function CategoryListScreen() {
       <ListViewLayout
         header={
           <ListViewHeader
-            badge="Inventory"
-            title="Categories"
-            description="Organize your product catalog with categories and keep inventory structured."
+            badge={badge}
+            title={title}
+            description={description}
             actions={
-              <>
+              readOnly ? (
                 <UiButton variant="outline" buttonText="Export" icon={Download} />
-                <UiButton
-                  variant="primary"
-                  buttonText="Add Category"
-                  icon={Plus}
-                  onClick={() => setIsAddCategoryOpen(true)}
-                />
-              </>
+              ) : (
+                <>
+                  <UiButton variant="outline" buttonText="Export" icon={Download} />
+                  <UiButton
+                    variant="primary"
+                    buttonText="Add Category"
+                    icon={Plus}
+                    onClick={() => setIsAddCategoryOpen(true)}
+                  />
+                </>
+              )
             }
           />
         }
@@ -362,28 +392,37 @@ export function CategoryListScreen() {
         </div>
       </ListViewLayout>
 
-      <AddCategorySheet
-        open={isAddCategoryOpen}
-        onOpenChange={setIsAddCategoryOpen}
-        onSubmit={handleAddCategory}
-      />
+      {!readOnly ? (
+        <AddCategorySheet
+          open={isAddCategoryOpen}
+          onOpenChange={setIsAddCategoryOpen}
+          onSubmit={handleAddCategory}
+        />
+      ) : null}
 
       <ViewCategorySheet
         open={isViewCategoryOpen}
         onOpenChange={setIsViewCategoryOpen}
         category={selectedCategory}
-        onEdit={() => {
-          setIsViewCategoryOpen(false);
-          setIsEditCategoryOpen(true);
-        }}
+        readOnly={readOnly}
+        onEdit={
+          readOnly
+            ? undefined
+            : () => {
+                setIsViewCategoryOpen(false);
+                setIsEditCategoryOpen(true);
+              }
+        }
       />
 
-      <EditCategorySheet
-        open={isEditCategoryOpen}
-        onOpenChange={setIsEditCategoryOpen}
-        category={selectedCategory}
-        onSubmit={handleUpdateCategory}
-      />
+      {!readOnly ? (
+        <EditCategorySheet
+          open={isEditCategoryOpen}
+          onOpenChange={setIsEditCategoryOpen}
+          category={selectedCategory}
+          onSubmit={handleUpdateCategory}
+        />
+      ) : null}
     </>
   );
 }

@@ -5,6 +5,7 @@ export type CategoryFilterInput = {
   limit?: number;
   search?: string;
   status?: string;
+  companyId?: string;
 };
 
 export function buildCategoryListParams(
@@ -27,6 +28,10 @@ export function buildCategoryListParams(
 
   if (filters.status && filters.status !== "all") {
     params.status = filters.status;
+  }
+
+  if (filters.companyId && filters.companyId !== "all") {
+    params.company_id = Number(filters.companyId);
   }
 
   return params;

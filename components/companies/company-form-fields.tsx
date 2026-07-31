@@ -16,15 +16,8 @@ import {
 import { FormSelect } from "@/components/ui/form-select";
 import { Input } from "@/components/ui/input";
 import type { AddCompanyFormValues } from "@/schema/companySchema";
-import {
-  companyPlanLabels,
-  companyStatusLabels,
-} from "@/types/company";
-import type { CompanyPlan, CompanyStatus } from "@/types/company";
-
-const planOptions = (
-  Object.entries(companyPlanLabels) as [CompanyPlan, string][]
-).map(([value, label]) => ({ label, value }));
+import { companyStatusLabels } from "@/types/company";
+import type { CompanyStatus } from "@/types/company";
 
 const statusOptions = (
   Object.entries(companyStatusLabels) as [CompanyStatus, string][]
@@ -55,7 +48,7 @@ export function CompanyFormFields({
             >
               <Input
                 id="name"
-                placeholder="e.g. Universal Trading Co."
+                placeholder="e.g. ABC Corp"
                 aria-invalid={!!errors.name}
                 className={sheetInputClassName}
                 {...register("name")}
@@ -63,86 +56,79 @@ export function CompanyFormFields({
             </SheetFormField>
 
             <SheetFormField
-              label="Company Email"
+              label="Slug"
+              htmlFor="slug"
+              required
+              error={errors.slug?.message}
+              hint="Unique URL-friendly key"
+            >
+              <Input
+                id="slug"
+                placeholder="e.g. abc-corp"
+                aria-invalid={!!errors.slug}
+                className={sheetInputClassName}
+                {...register("slug")}
+              />
+            </SheetFormField>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <SheetFormField
+              label="Email"
               htmlFor="email"
               required
               error={errors.email?.message}
+              hint="Also used as company admin login"
             >
               <Input
                 id="email"
                 type="email"
-                placeholder="e.g. info@company.com"
+                placeholder="e.g. abc@mail.com"
                 aria-invalid={!!errors.email}
                 className={sheetInputClassName}
                 {...register("email")}
               />
             </SheetFormField>
-          </div>
-        </FieldGroup>
-      </FieldSet>
-
-      <FieldSet className="gap-5">
-        <FieldLegend variant="label">Company Admin</FieldLegend>
-        <FieldGroup className="gap-5">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <SheetFormField
-              label="Admin Name"
-              htmlFor="adminName"
-              required
-              error={errors.adminName?.message}
-            >
-              <Input
-                id="adminName"
-                placeholder="e.g. Ahmed Khan"
-                aria-invalid={!!errors.adminName}
-                className={sheetInputClassName}
-                {...register("adminName")}
-              />
-            </SheetFormField>
 
             <SheetFormField
-              label="Admin Email"
-              htmlFor="adminEmail"
-              required
-              error={errors.adminEmail?.message}
-              hint="Primary login email for company admin"
+              label="Phone"
+              htmlFor="phone"
+              error={errors.phone?.message}
             >
               <Input
-                id="adminEmail"
-                type="email"
-                placeholder="e.g. admin@company.com"
-                aria-invalid={!!errors.adminEmail}
+                id="phone"
+                placeholder="e.g. 03001234567"
                 className={sheetInputClassName}
-                {...register("adminEmail")}
+                {...register("phone")}
               />
             </SheetFormField>
           </div>
-        </FieldGroup>
-      </FieldSet>
 
-      <FieldSet className="gap-5">
-        <FieldLegend variant="label">Subscription</FieldLegend>
-        <FieldGroup className="gap-5">
+          <SheetFormField
+            label="Address"
+            htmlFor="address"
+            error={errors.address?.message}
+          >
+            <Input
+              id="address"
+              placeholder="e.g. Karachi"
+              className={sheetInputClassName}
+              {...register("address")}
+            />
+          </SheetFormField>
+
           <div className="grid gap-5 sm:grid-cols-2">
             <SheetFormField
-              label="Plan"
-              htmlFor="plan"
-              required
-              error={errors.plan?.message}
+              label="Logo"
+              htmlFor="logo"
+              error={errors.logo?.message}
+              hint="Optional logo filename or URL"
             >
-              <Controller
-                name="plan"
-                control={control}
-                render={({ field }) => (
-                  <FormSelect
-                    id="plan"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Select plan"
-                    options={planOptions}
-                    className={sheetSelectClassName}
-                  />
-                )}
+              <Input
+                id="logo"
+                placeholder="e.g. logo.png"
+                className={sheetInputClassName}
+                {...register("logo")}
               />
             </SheetFormField>
 
