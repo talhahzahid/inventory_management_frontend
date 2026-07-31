@@ -5,7 +5,7 @@ import {
   updateInventoryApi,
   type InventoryApiRecord,
   type InventoryListParams,
-} from "@/api/inventory";
+} from "@/lib/api/inventory";
 import type {
   AdjustInventoryFormValues,
   EditInventoryFormValues,

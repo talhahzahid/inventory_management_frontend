@@ -5,7 +5,7 @@ import {
   updateSupplierApi,
   type SupplierApiRecord,
   type SuppliersListParams,
-} from "@/api/suppliers";
+} from "@/lib/api/suppliers";
 import type { AddSupplierFormValues } from "@/schema/supplierSchema";
 import type { Supplier } from "@/types/supplier";
 

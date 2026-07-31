@@ -1,4 +1,4 @@
-import { apiRequest } from "@/api/api";
+import { apiRequest } from "@/lib/api/api";
 import type { PlatformRoleName } from "@/types/platform-role";
 
 export type RoleApiRecord = {

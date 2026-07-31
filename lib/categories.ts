@@ -6,7 +6,7 @@ import {
   updateCategoryApi,
   type CategoriesListParams,
   type CategoryApiRecord,
-} from "@/api/categories";
+} from "@/lib/api/categories";
 import { getSession } from "@/lib/auth";
 import type { AddCategoryFormValues } from "@/schema/categorySchema";
 import type { Category } from "@/types/category";

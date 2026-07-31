@@ -3,7 +3,7 @@ import {
   type DashboardReorderApiItem,
   type DashboardSalesBucketApi,
   type DashboardSummaryApiRecord,
-} from "@/api/dashboard";
+} from "@/lib/api/dashboard";
 import type {
   DashboardReorderItem,
   DashboardSalesBucket,

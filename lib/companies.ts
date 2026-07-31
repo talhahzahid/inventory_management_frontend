@@ -6,7 +6,7 @@ import {
   updateCompanyApi,
   type CompaniesListParams,
   type CompanyApiRecord,
-} from "@/api/companies";
+} from "@/lib/api/companies";
 import type { AddCompanyFormValues } from "@/schema/companySchema";
 import type { Company } from "@/types/company";
 

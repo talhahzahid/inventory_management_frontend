@@ -1,4 +1,4 @@
-import type { SalesListParams } from "@/api/sales";
+import type { SalesListParams } from "@/lib/api/sales";
 
 export type SaleFilterInput = {
   page?: number;

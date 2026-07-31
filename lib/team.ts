@@ -3,7 +3,7 @@ import {
   fetchUsersApi,
   type UserApiRecord,
   type UsersListParams,
-} from "@/api/users";
+} from "@/lib/api/users";
 import type { AddStaffFormValues } from "@/schema/staffSchema";
 import type { StaffMember, StaffStatus } from "@/types/team";
 

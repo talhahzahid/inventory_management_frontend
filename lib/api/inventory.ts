@@ -1,4 +1,4 @@
-import { apiRequest } from "@/api/api";
+import { apiRequest } from "@/lib/api/api";
 import type { ProductStatus } from "@/types/product";
 
 export type InventoryProductApiRecord = {

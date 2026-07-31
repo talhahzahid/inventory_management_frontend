@@ -1,4 +1,4 @@
-import { apiRequest } from "@/api/api";
+import { apiRequest } from "@/lib/api/api";
 import type { UserRole } from "@/types/auth";
 
 const BACKEND_TO_FRONTEND_ROLE: Record<string, UserRole> = {

@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { getErrorMessage } from "@/api/api";
+import { getErrorMessage } from "@/lib/api/api";
 
 import { UiButton } from "@/components/Button";
 import { StaffFormFields } from "@/components/team/staff-form-fields";

@@ -4,7 +4,7 @@ import { Download, Loader2, MoreHorizontal, UserPlus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { getErrorMessage } from "@/api/api";
+import { getErrorMessage } from "@/lib/api/api";
 
 import { UiButton } from "@/components/Button";
 import {

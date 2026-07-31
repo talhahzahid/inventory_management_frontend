@@ -1,4 +1,4 @@
-import type { ProductsListParams } from "@/api/products";
+import type { ProductsListParams } from "@/lib/api/products";
 
 export type ProductFilterInput = {
   page?: number;

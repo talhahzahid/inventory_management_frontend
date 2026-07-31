@@ -1,4 +1,4 @@
-import type { PurchasesListParams } from "@/api/purchases";
+import type { PurchasesListParams } from "@/lib/api/purchases";
 
 export type PurchaseFilterInput = {
   page?: number;

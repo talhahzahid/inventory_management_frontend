@@ -6,7 +6,7 @@ import {
   type SaleApiRecord,
   type SaleItemApiRecord,
   type SalesListParams,
-} from "@/api/sales";
+} from "@/lib/api/sales";
 import type { CreateSaleFormValues } from "@/schema/saleSchema";
 import type { Sale, SaleItem } from "@/types/sale";
 

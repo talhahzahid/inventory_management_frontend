@@ -1,4 +1,4 @@
-import type { UsersListParams } from "@/api/users";
+import type { UsersListParams } from "@/lib/api/users";
 
 export type TeamFilterInput = {
   page?: number;

@@ -1,4 +1,4 @@
-import type { SuppliersListParams } from "@/api/suppliers";
+import type { SuppliersListParams } from "@/lib/api/suppliers";
 
 export type SupplierFilterInput = {
   page?: number;

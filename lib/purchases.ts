@@ -5,7 +5,7 @@ import {
   type PurchaseApiRecord,
   type PurchaseItemApiRecord,
   type PurchasesListParams,
-} from "@/api/purchases";
+} from "@/lib/api/purchases";
 import type { CreatePurchaseFormValues } from "@/schema/purchaseSchema";
 import type { Purchase, PurchaseItem } from "@/types/purchase";
 

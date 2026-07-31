@@ -1,4 +1,4 @@
-import type { InventoryListParams } from "@/api/inventory";
+import type { InventoryListParams } from "@/lib/api/inventory";
 
 export type InventoryFilterInput = {
   page?: number;

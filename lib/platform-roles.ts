@@ -4,7 +4,7 @@ import {
   fetchRolesApi,
   type RoleApiRecord,
   type RolesListParams,
-} from "@/api/roles";
+} from "@/lib/api/roles";
 import type { AddPlatformRoleFormValues } from "@/schema/platformRoleSchema";
 import type { PlatformRole } from "@/types/platform-role";
 

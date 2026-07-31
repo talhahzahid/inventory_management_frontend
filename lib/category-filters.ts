@@ -1,4 +1,4 @@
-import type { CategoriesListParams } from "@/api/categories";
+import type { CategoriesListParams } from "@/lib/api/categories";
 
 export type CategoryFilterInput = {
   page?: number;

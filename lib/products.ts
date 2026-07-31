@@ -6,7 +6,7 @@ import {
   updateProductApi,
   type ProductApiRecord,
   type ProductsListParams,
-} from "@/api/products";
+} from "@/lib/api/products";
 import type { AddProductFormValues, EditProductFormValues } from "@/schema/productSchema";
 import type { Product } from "@/types/product";
 
