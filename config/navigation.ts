@@ -28,7 +28,7 @@ export type NavGroup = {
 };
 
 export const appConfig = {
-  name: "StockFlow",
+  name: "T&Z",
   description: "Inventory Management System",
   logoIcon: Package,
 };
