@@ -1,10 +1,16 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { NavUser } from "@/components/layout/nav-user";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -16,8 +22,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import type { NavGroup } from "@/config/navigation";
+import type { NavGroup, NavItem } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/types/auth";
 
@@ -32,16 +41,124 @@ function isActiveRoute(pathname: string, href: string) {
   if (href === "/admin" || href === "/company" || href === "/user") {
     return pathname === href;
   }
-
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppSidebar({
-  navGroups,
-  homeHref,
-  user,
-  logoutPath,
-}: AppSidebarProps) {
+function NavLeaf({ item, active }: { item: NavItem; active: boolean }) {
+  return (
+    <SidebarMenuButton
+      render={<Link href={item.href} />}
+      isActive={active}
+      tooltip={item.title}
+      className={cn(
+        "h-10 overflow-hidden rounded-xl font-medium transition-colors",
+        active &&
+        "bg-linear-to-r from-indigo-500/10 via-indigo-400/10 to-violet-400/10 text-indigo-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] hover:from-indigo-500/10 hover:via-indigo-400/10 hover:to-violet-400/10"
+      )}
+    >
+      <item.icon className={cn(active ? "text-indigo-600" : "text-muted-foreground")} />
+      <span>{item.title}</span>
+    </SidebarMenuButton>
+  );
+}
+
+function NavItemWithChildren({ item, pathname }: { item: NavItem; pathname: string }) {
+  const parentActive = isActiveRoute(pathname, item.href);
+  const childActive = item.children?.some((c) => isActiveRoute(pathname, c.href)) ?? false;
+  const active = parentActive || childActive;
+
+  return (
+    <Collapsible defaultOpen={active} className="group/collapsible">
+      <SidebarMenuItem>
+        <CollapsibleTrigger
+          render={
+            <SidebarMenuButton
+              isActive={active}
+              tooltip={item.title}
+              className={cn(
+                "h-10 overflow-hidden rounded-xl font-medium transition-colors",
+                active &&
+                "bg-linear-to-r from-indigo-500/10 via-indigo-400/10 to-violet-400/10 text-indigo-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+              )}
+            >
+              <item.icon className={cn(active ? "text-indigo-600" : "text-muted-foreground")} />
+              <span>{item.title}</span>
+              <ChevronRight className="ml-auto size-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+            </SidebarMenuButton>
+          }
+        />
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.children!.map((child) => {
+              const childIsActive = isActiveRoute(pathname, child.href);
+              return (
+                <SidebarMenuSubItem key={child.href}>
+                  <SidebarMenuSubButton
+                    render={<Link href={child.href} />}
+                    isActive={childIsActive}
+                    className={cn(childIsActive && "text-indigo-700 font-medium")}
+                  >
+                    <child.icon className={cn(childIsActive ? "text-indigo-600" : "text-muted-foreground")} />
+                    <span>{child.title}</span>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              );
+            })}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  );
+}
+
+// function NavItemWithChildren({ item, pathname }: { item: NavItem; pathname: string }) {
+//   const parentActive = isActiveRoute(pathname, item.href);
+//   const childActive = item.children?.some((c) => isActiveRoute(pathname, c.href)) ?? false;
+//   const active = parentActive || childActive;
+
+//   return (
+//     <Collapsible defaultOpen={active} className="group/collapsible">
+//       <SidebarMenuItem>
+//         <CollapsibleTrigger asChild>
+//           <SidebarMenuButton
+//             isActive={active}
+//             tooltip={item.title}
+//             className={cn(
+//               "h-10 overflow-hidden rounded-xl font-medium transition-colors",
+//               active &&
+//               "bg-linear-to-r from-indigo-500/10 via-indigo-400/10 to-violet-400/10 text-indigo-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+//             )}
+//           >
+//             <item.icon className={cn(active ? "text-indigo-600" : "text-muted-foreground")} />
+//             <span>{item.title}</span>
+//             <ChevronRight className="ml-auto size-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+//           </SidebarMenuButton>
+//         </CollapsibleTrigger>
+//         <CollapsibleContent>
+//           <SidebarMenuSub>
+//             {item.children!.map((child) => {
+//               const childIsActive = isActiveRoute(pathname, child.href);
+//               return (
+//                 <SidebarMenuSubItem key={child.href}>
+//                   <SidebarMenuSubButton
+//                     render={<Link href={child.href} />}
+//                     isActive={childIsActive}
+//                     className={cn(childIsActive && "text-indigo-700 font-medium")}
+//                   >
+//                     <child.icon className={cn(childIsActive ? "text-indigo-600" : "text-muted-foreground")} />
+//                     <span>{child.title}</span>
+//                   </SidebarMenuSubButton>
+//                 </SidebarMenuSubItem>
+//               );
+//             })}
+//           </SidebarMenuSub>
+//         </CollapsibleContent>
+//       </SidebarMenuItem>
+//     </Collapsible>
+//   );
+// }
+
+export function AppSidebar({ navGroups, homeHref, user, logoutPath }: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -58,7 +175,6 @@ export function AppSidebar({
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-
         <div className="mx-1 h-px bg-sidebar-border" />
       </SidebarHeader>
 
@@ -70,31 +186,15 @@ export function AppSidebar({
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
-                {group.items.map((item) => {
-                  const active = isActiveRoute(pathname, item.href);
-
-                  return (
+                {group.items.map((item) =>
+                  item.children && item.children.length > 0 ? (
+                    <NavItemWithChildren key={item.href} item={item} pathname={pathname} />
+                  ) : (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        render={<Link href={item.href} />}
-                        isActive={active}
-                        tooltip={item.title}
-                        className={cn(
-                          "h-10 overflow-hidden rounded-xl font-medium transition-colors",
-                          active &&
-                            "bg-linear-to-r from-indigo-500/10 via-indigo-400/10 to-violet-400/10 text-indigo-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] hover:from-indigo-500/10 hover:via-indigo-400/10 hover:to-violet-400/10"
-                        )}
-                      >
-                        <item.icon
-                          className={cn(
-                            active ? "text-indigo-600" : "text-muted-foreground"
-                          )}
-                        />
-                        <span>{item.title}</span>
-                      </SidebarMenuButton>
+                      <NavLeaf item={item} active={isActiveRoute(pathname, item.href)} />
                     </SidebarMenuItem>
-                  );
-                })}
+                  )
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

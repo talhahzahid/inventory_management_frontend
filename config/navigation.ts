@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   Building2,
   LayoutDashboard,
   Package,
@@ -9,6 +10,7 @@ import {
   ShoppingCart,
   Tags,
   Truck,
+  UserCircle,
   Users,
   Warehouse,
   type LucideIcon,
@@ -16,10 +18,17 @@ import {
 
 import type { LoginPortal, UserRole } from "@/types/auth";
 
+// export type NavItem = {
+//   title: string;
+//   href: string;
+//   icon: LucideIcon;
+// };
+
 export type NavItem = {
   title: string;
   href: string;
   icon: LucideIcon;
+  children?: NavItem[]; // add this
 };
 
 export type NavGroup = {
@@ -108,7 +117,20 @@ const companyNav: NavGroup[] = [
     label: "Company",
     items: [
       { title: "Team", href: "/company/team", icon: Users },
-      { title: "Settings", href: "/company/settings", icon: Settings },
+      {
+        title: "Settings",
+        href: "/company/settings",
+        icon: Settings,
+        children: [
+          {
+            title: "Change Password",
+            href: "/company/password",
+            icon: UserCircle,
+          },
+          // { title: "Billing", href: "/company/settings/billing", icon: BarChart3 },
+          // { title: "Notifications", href: "/company/settings/notifications", icon: Bell },
+        ],
+      },
     ],
   },
 ];
