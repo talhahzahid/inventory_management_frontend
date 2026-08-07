@@ -57,13 +57,20 @@ export async function apiRequest<T>({
   headers = {},
   auth = true,
 }: ApiRequestOptions): Promise<T> {
+  const isFormData = body instanceof FormData;
+  console.log("IS FORMDATA:", body instanceof FormData);
+
   const requestHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
     ...headers,
   };
 
+  if (!isFormData) {
+    requestHeaders["Content-Type"] = "application/json";
+  }
+
   if (auth) {
     const token = getAuthToken();
+
     if (token) {
       requestHeaders.Authorization = `Bearer ${token}`;
     }
@@ -72,16 +79,10 @@ export async function apiRequest<T>({
   const response = await fetch(buildUrl(endpoint), {
     method,
     headers: requestHeaders,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
   });
 
-  let result: ApiResponseWrapper<T>;
-
-  try {
-    result = await response.json();
-  } catch {
-    throw new ApiError("Invalid response from server", response.status);
-  }
+  const result = await response.json();
 
   if (!response.ok) {
     throw new ApiError(
@@ -90,9 +91,67 @@ export async function apiRequest<T>({
     );
   }
 
-  if (result.statusCode >= 400) {
-    throw new ApiError(result.message || "Request failed", result.statusCode);
-  }
-
   return result.data;
 }
+
+// export async function apiRequest<T>({
+//   endpoint,
+//   method = "GET",
+//   body,
+//   headers = {},
+//   auth = true,
+// }: ApiRequestOptions): Promise<T> {
+//   const isFormData = body instanceof FormData;
+
+//   // const requestHeaders: Record<string, string> = {
+//   //   "Content-Type": "application/json",
+//   //   ...headers,
+//   // };
+
+//   const requestHeaders: Record<string, string> = {
+//     ...headers,
+//   };
+
+//   if (!isFormData) {
+//     requestHeaders["Content-Type"] = "application/json";
+//   }
+
+//   if (auth) {
+//     const token = getAuthToken();
+//     if (token) {
+//       requestHeaders.Authorization = `Bearer ${token}`;
+//     }
+//   }
+
+//   const response = await fetch(buildUrl(endpoint), {
+//     method,
+//     headers: requestHeaders,
+//     // body: body !== undefined ? JSON.stringify(body) : undefined,
+//      body: body
+//       ? isFormData
+//         ? body
+//         : JSON.stringify(body)
+//       : undefined,
+//   });
+
+//   let result: ApiResponseWrapper<T>;
+
+//   try {
+//     result = await response.json();
+//   } catch {
+//     throw new ApiError("Invalid response from server", response.status);
+//   }
+
+//   if (!response.ok) {
+//     throw new ApiError(
+//       result.message || "Request failed",
+//       result.statusCode || response.status,
+//     );
+//   }
+
+//   if (result.statusCode >= 400) {
+//     throw new ApiError(result.message || "Request failed", result.statusCode);
+//   }
+
+//   return result.data;
+// }

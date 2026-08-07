@@ -39,7 +39,7 @@ export type CompaniesListResult = {
 };
 
 export async function fetchCompaniesList(
-  params?: CompaniesListParams
+  params?: CompaniesListParams,
 ): Promise<CompaniesListResult> {
   const result = await fetchCompaniesApi({
     page: 1,
@@ -61,25 +61,47 @@ export async function fetchCompanyById(id: string): Promise<Company> {
   return mapCompanyFromApi(company);
 }
 
+
 export async function createCompany(
   values: AddCompanyFormValues
 ): Promise<Company> {
-  const company = await createCompanyApi({
-    name: values.name,
-    slug: values.slug,
-    email: values.email,
-    phone: values.phone || undefined,
-    address: values.address || undefined,
-    logo: values.logo || undefined,
-    status: values.status,
-  });
+  const formData = new FormData();
 
+  formData.append("name", values.name);
+  formData.append("slug", values.slug);
+  formData.append("email", values.email);
+  formData.append("status", values.status);
+
+  if (values.phone) formData.append("phone", values.phone);
+  if (values.address) formData.append("address", values.address);
+  if (values.logo && values.logo.length > 0) {
+    formData.append("logo", values.logo[0]);
+  }
+
+  const company = await createCompanyApi(formData);
   return mapCompanyFromApi(company);
 }
 
+// export async function createCompany(
+//   values: AddCompanyFormValues,
+// ): Promise<Company> {
+//   const company = await createCompanyApi({
+//     name: values.name,
+//     slug: values.slug,
+//     email: values.email,
+//     phone: values.phone || undefined,
+//     address: values.address || undefined,
+//     // logo: values.logo || undefined,
+//     logo: undefined,
+//     status: values.status,
+//   });
+
+//   return mapCompanyFromApi(company);
+// }
+
 export async function updateCompany(
   id: string,
-  values: AddCompanyFormValues
+  values: AddCompanyFormValues,
 ): Promise<Company> {
   const company = await updateCompanyApi(id, {
     name: values.name,
@@ -87,7 +109,8 @@ export async function updateCompany(
     email: values.email,
     phone: values.phone || undefined,
     address: values.address || undefined,
-    logo: values.logo || undefined,
+    // logo: values.logo || undefined,
+    logo: undefined,
     status: values.status,
   });
 

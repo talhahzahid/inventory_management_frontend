@@ -127,6 +127,7 @@ export function CompanyFormFields({
               <Input
                 id="logo"
                 placeholder="e.g. logo.png"
+                type="file"
                 className={sheetInputClassName}
                 {...register("logo")}
               />

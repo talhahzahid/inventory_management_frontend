@@ -79,18 +79,27 @@ export async function fetchCompanyByIdApi(id: string | number) {
   });
 }
 
-export async function createCompanyApi(payload: CreateCompanyPayload) {
+// export async function createCompanyApi(payload: CreateCompanyPayload) {
+//   return apiRequest<CompanyApiRecord>({
+//     endpoint: "/companies/create",
+//     method: "POST",
+//     body: payload,
+//     auth: false,
+//   });
+// }
+
+export async function createCompanyApi(formData: FormData) {
   return apiRequest<CompanyApiRecord>({
     endpoint: "/companies/create",
     method: "POST",
-    body: payload,
+    body: formData,
     auth: false,
   });
 }
 
 export async function updateCompanyApi(
   id: string | number,
-  payload: UpdateCompanyPayload
+  payload: UpdateCompanyPayload,
 ) {
   return apiRequest<CompanyApiRecord>({
     endpoint: `/companies/${id}`,

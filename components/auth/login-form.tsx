@@ -73,10 +73,11 @@ export function LoginForm({
           user.company_id === null || user.company_id === undefined
             ? null
             : Number(user.company_id),
+        companyLogo: user.logo ? String(user.logo) : undefined,
         role_id: user.role_id === undefined ? undefined : Number(user.role_id),
         token,
       };
-
+      console.log(session)
       saveSession(session);
       router.push(getDashboardPathForRole(mappedRole));
     } catch (loginError) {

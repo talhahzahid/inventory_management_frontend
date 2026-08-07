@@ -14,6 +14,7 @@ export type LoginUser = {
   email: string;
   company_id: number | null;
   company_name?: string | null;
+  logo: string;
   role_id: number;
   role: string;
 };
@@ -29,7 +30,7 @@ export function mapBackendRole(backendRole: string): UserRole | null {
 
 export function isRoleAllowedOnPortal(
   portalRole: UserRole,
-  backendRole: string
+  backendRole: string,
 ): boolean {
   return mapBackendRole(backendRole) === portalRole;
 }

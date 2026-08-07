@@ -87,13 +87,22 @@ export function CompanyListScreen() {
     loadCompanies();
   }, [loadCompanies]);
 
-  const handleAdd = async (values: AddCompanyFormValues) => {
-    await createCompany(values);
-    await loadCompanies();
-    toast.success("Company created successfully", {
-      description: `${values.name} has been registered. Admin credentials were emailed.`,
-    });
-  };
+  // const handleAdd = async (values: AddCompanyFormValues) => {
+  //   await createCompany(values);
+  //   await loadCompanies();
+  //   toast.success("Company created successfully", {
+  //     description: `${values.name} has been registered. Admin credentials were emailed.`,
+  //   });
+  // };
+
+  // handleAdd
+const handleAdd = async (values: AddCompanyFormValues) => {
+  await createCompany(values);
+  await loadCompanies();
+  toast.success("Company created successfully", {
+    description: `${values.name} has been registered. Admin credentials were emailed.`,
+  });
+};
 
   const handleUpdate = async (id: string, values: AddCompanyFormValues) => {
     const company = await updateCompany(id, values);

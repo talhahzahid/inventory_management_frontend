@@ -10,7 +10,8 @@ export const addCompanySchema = z.object({
   email: z.string().trim().email("Enter a valid company email"),
   phone: z.string().trim().optional(),
   address: z.string().trim().optional(),
-  logo: z.string().trim().optional(),
+  // logo: z.string().trim().optional(),
+  logo: z.instanceof(FileList).optional(),
   status: z.enum(["active", "inactive"]),
 });
 

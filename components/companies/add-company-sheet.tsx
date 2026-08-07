@@ -16,7 +16,11 @@ import {
 type AddCompanySheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit?: (values: AddCompanyFormValues) => void | Promise<void>;
+  // onSubmit?: (values: AddCompanyFormValues) => void | Promise<void>;
+  // onSubmit?: (values: FormData) => void | Promise<void>;
+    onSubmit?: (values: AddCompanyFormValues) => void | Promise<void>;  // ✅ naya
+
+
 };
 
 function slugify(name: string) {
@@ -33,7 +37,7 @@ const defaultValues: AddCompanyFormValues = {
   email: "",
   phone: "",
   address: "",
-  logo: "",
+  logo: undefined,
   status: "active",
 };
 
@@ -67,11 +71,33 @@ export function AddCompanySheet({
     onOpenChange(nextOpen);
   };
 
-  const submitForm = handleSubmit(async (values) => {
-    await onSubmit?.(values);
-    reset(defaultValues);
-    onOpenChange(false);
-  });
+//   const submitForm = handleSubmit(async (values) => {
+//     const formData = new FormData()
+
+//     formData.append('name', values?.name)
+//     formData.append('slug', values?.slug)
+//     formData.append('email', values?.email)
+//     formData.append('status', values?.status)
+
+//     if (values.address) {
+//       formData.append("address", values.address);
+//     }
+
+//     if (values.logo && values.logo.length > 0) {
+//       formData.append('logo', values.logo[0])
+//     }
+// console.log([...formData.entries()]);
+//     // return
+//     await onSubmit?.(formData);
+//     reset(defaultValues);
+//     onOpenChange(false);
+//   });
+
+const submitForm = handleSubmit(async (values) => {
+  await onSubmit?.(values);
+  reset(defaultValues);
+  onOpenChange(false);
+});
 
   return (
     <SheetLayout

@@ -7,6 +7,7 @@ export type AuthUser = {
   email: string;
   company?: string;
   company_id?: number | null;
+  companyLogo?: any;
   role_id?: number;
   token?: string;
 };
