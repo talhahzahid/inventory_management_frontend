@@ -32,7 +32,7 @@ function getDefaultValues(company: Company | null): AddCompanyFormValues {
     email: company?.email ?? "",
     phone: company?.phone ?? "",
     address: company?.address ?? "",
-    logo: company?.logo ?? "",
+    logo: undefined,
     status: company?.status ?? "active",
   };
 }
